@@ -70,9 +70,9 @@ class mySprite:
         self._Surface.fill(self._Color)
     
     def LeftRightMove(self, PRESSED_KEYS):
-        if PRESSED_KEYS[pygame.K_d] == 1:
+        if PRESSED_KEYS[pygame.K_d] == 1 or PRESSED_KEYS[pygame.K_RIGHT] == 1:
             self.__x += self.__Speed
-        if PRESSED_KEYS[pygame.K_a] == 1:
+        if PRESSED_KEYS[pygame.K_a] == 1 or PRESSED_KEYS[pygame.K_LEFT] == 1:
             self.__x -= self.__Speed
         self.SetPosition(self.__x, self.__y)
 
@@ -97,6 +97,12 @@ class mySprite:
         if self.__y < MIN_Y:
             self.__y = MIN_Y
         self.__Position = (self.__x, self.__y)
+    
+    def isCollision(self, Width, Height, Position):
+        if Position[0] + Width >= self.__x and Position[0] <= self.__x + self.GetWidth():
+            if Position[1] + Height >= self.__y and Position[1] <= self.__y + self.GetHeight():
+                return True
+        return False
 
     # --- Accessor Methods ---
     def GetPosition(self):
@@ -123,8 +129,18 @@ class PaddleSprite(mySprite):
 class Brick(mySprite):
     pass
 
-class Text(mySprite):
-    pass
+class TextSprite(mySprite):
+    def __init__(self, TEXT, F_FAMILY="Arial", F_SIZE=36, X=0, Y=0):
+        mySprite.__init__(self, x=X, y=Y)
+        self.__Text = TEXT
+        self.__FontFamily = F_FAMILY
+        self.__FontSize = F_SIZE
+        self.__Font = pygame.font.SysFont(self.__FontFamily, self.__FontSize)
+        self._Surface = self.__Font.render(self.__Text, True, self._Color)
+    
+    def UpdateText(self, NEW_TEXT):
+        self.__Text = NEW_TEXT
+        self._Surface = self.__Font.render(self.__Text, True, self._Color)
 
 class UpperBlock(mySprite):
     def __init__(self, Width, Height):
@@ -133,7 +149,21 @@ class UpperBlock(mySprite):
         self._Surface.fill(self._Color)
 
 if __name__ == "__main__":
-    Window = WINDOW("Brick Breaker", 500, 600, 60)
+    Window = WINDOW("Brick Breaker", 600, 700, 60)
+
+    # --- Variables ---
+    Score = 0
+    Level = 1
+
+    # --- Text Sprites ---
+    TitleText = TextSprite("BRICK BREAKER!", "Comic sans", 25)
+    TitleText.SetPosition(Window.GetWidth()/2 - TitleText.GetWidth()/2, 0)
+
+    ScoreText = TextSprite("Score: " + str(Score), "Comic sans", 25)
+    ScoreText.SetPosition(0, 0)
+
+    LevelText = TextSprite("Level: " + str(Level), "Comic sans", 25)
+    LevelText.SetPosition(Window.GetWidth() - LevelText.GetWidth() - 10, 0)
 
     TopBoundary = UpperBlock(Window.GetWidth(), 50)
     TopBoundary.SetColor((0, 0, 0))
@@ -153,10 +183,20 @@ if __name__ == "__main__":
         Paddle.LeftRightMove(PRESSED_KEYS)
         Paddle.CheckBoundaries(Window.GetWidth(), Window.GetHeight())
 
+        ScoreText.UpdateText("Score: " + str(Score)) # Maybe an if-statement for this when the score actually changes
+
+        LevelText.UpdateText("Level: " + str(Level)) # Put this after a level has been cleared
+        LevelText.SetPosition(Window.GetWidth() - LevelText.GetWidth() - 10, 0)
+
+        # --- OUTPUTS ---
         Window.ClearScreen()
         Window.GetSurface().blit(Paddle.GetSurface(), Paddle.GetPosition())
 
         Window.GetSurface().blit(TopBoundary.GetSurface(), TopBoundary.GetPosition())
+
+        Window.GetSurface().blit(TitleText.GetSurface(), TitleText.GetPosition())
+        Window.GetSurface().blit(ScoreText.GetSurface(), ScoreText.GetPosition())
+        Window.GetSurface().blit(LevelText.GetSurface(), LevelText.GetPosition())
         Window.UpdateFrame()
 
 
