@@ -256,6 +256,6 @@ if __name__ == "__main__":
         Window.GetSurface().blit(ScoreText.GetSurface(), ScoreText.GetPosition())
         Window.GetSurface().blit(LevelText.GetSurface(), LevelText.GetPosition())
         Window.UpdateFrame()
-
+# test
 
 
