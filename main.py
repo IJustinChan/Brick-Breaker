@@ -240,6 +240,37 @@ if __name__ == "__main__":
         Ball.Move(Ball.GetPosition())
         Ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
 
+        if Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
+            # Ball.ChangeDirY(Ball.GetDirY()*-1)
+            BallPosition = Ball.GetPosition()
+            BallX = BallPosition[0]
+            BallY = BallPosition[1]
+            
+            PaddlePosition = Paddle.GetPosition()
+            PaddleX = PaddlePosition[0]
+            PaddleY = PaddlePosition[1]
+
+            Ball_BottomRight = (BallX + Ball.GetWidth(), BallY + Ball.GetHeight())
+            Ball_BottomLeft = (BallX, BallY + Ball.GetHeight())
+
+            if BallX >= PaddleX and BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth():
+                Ball.ChangeDirY(Ball.GetDirY()*-1)
+            else:
+                if BallX >= PaddleX and BallX + Ball.GetWidth() > PaddleX + Paddle.GetWidth() and Ball.GetDirX() == 1:
+                    Ball.ChangeDirY(Ball.GetDirY() * -1)
+                elif BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth() and BallX < PaddleX and Ball.GetDirX() == -1:
+                    Ball.ChangeDirY(Ball.GetDirY() * -1)
+                else:
+                    Ball.ChangeDirY(Ball.GetDirY()*-1)
+                    Ball.ChangeDirX(Ball.GetDirX()*-1)
+
+            while Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
+                Ball.Move(Ball.GetPosition())
+
+            # Ball.SetPosition(Ball.GetPosition()[0], Paddle.GetPosition()[1])
+            # Ball.ChangeDirX(Ball.GetDirX()*-1)
+
+
         ScoreText.UpdateText("Score: " + str(Score)) # Maybe an if-statement for this when the score actually changes
 
         LevelText.UpdateText("Level: " + str(Level)) # Put this after a level has been cleared
@@ -256,6 +287,6 @@ if __name__ == "__main__":
         Window.GetSurface().blit(ScoreText.GetSurface(), ScoreText.GetPosition())
         Window.GetSurface().blit(LevelText.GetSurface(), LevelText.GetPosition())
         Window.UpdateFrame()
-# test
+
 
 
