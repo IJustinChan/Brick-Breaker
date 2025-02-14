@@ -5,6 +5,8 @@ date: 2025-02-06
 """
 
 import pygame
+import random
+
 pygame.init()
 
 # --- WINDOW CLASS ---
@@ -164,7 +166,13 @@ class PaddleSprite(mySprite):
 class Brick(mySprite):
     def __init__(self, HEALTH, Width=1, Height=1, X=0, Y=0):
         mySprite.__init__(self, Width, Height, x=X, y=Y)
+        self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
+        self._Surface.fill(self._Color)
         self.__Health = HEALTH
+
+    def isCollision(self, Width, Height, Position):
+        if mySprite.isCollision(Width, Height, Position) is True: # MAYBE USE POLYMORPHISM HERE
+            pass
 
     def LoseHealth(self):
         self.__Health -= 1
@@ -191,8 +199,29 @@ class UpperBlock(mySprite):
         self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
         self._Surface.fill(self._Color)
 
+# --- INPUTS ---
+
+# --- PROCESSING ---
+def CreateBricks(NUM_BRICKS, LEVEL, WIDTH, HEIGHT): # INCOMPELTE AT THE MOMENT
+    BricksArr = []
+    StartX = 0
+    StartY = 0
+    if LEVEL > 4:
+        MaxHealth = 4
+    else:
+        MaxHealth = LEVEL
+    for i in range(NUM_BRICKS):
+        Health = random.randint(1, MaxHealth)
+        XPOS = (StartX + WIDTH + 10)*(i % 6)
+        YPOS = (StartY + HEIGHT + 10) # FIX THIS
+        BricksArr.append(Brick(Health, WIDTH, HEIGHT))
+
+
+# --- OUTPUTS ---
+
+
 if __name__ == "__main__":
-    Window = WINDOW("Brick Breaker", 500, 600, 60)
+    Window = WINDOW("Brick Breaker", 475, 630, 60)
 
     # --- Colors ---
     BrickColors = {
@@ -219,11 +248,13 @@ if __name__ == "__main__":
     TopBoundary = UpperBlock(Window.GetWidth(), 50)
     TopBoundary.SetColor((0, 0, 0))
 
-    Paddle = PaddleSprite(100, 20)
+    Paddle = PaddleSprite(100, 10)
     Paddle.SetPosition(Window.GetWidth()/2 - Paddle.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 30)
 
-    Ball = BallSprite(20, 20, 5)
+    Ball = BallSprite(20, 20, 4.5)
     Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2)
+
+    SingleBrick = Brick(1, 65, 35, 100, 100)
 
     while True:
         # --- INPUTS ---
@@ -250,6 +281,7 @@ if __name__ == "__main__":
             PaddleX = PaddlePosition[0]
             PaddleY = PaddlePosition[1]
 
+            # --- Maybe put this inside a function ---
             Ball_BottomRight = (BallX + Ball.GetWidth(), BallY + Ball.GetHeight())
             Ball_BottomLeft = (BallX, BallY + Ball.GetHeight())
 
@@ -280,6 +312,8 @@ if __name__ == "__main__":
         Window.ClearScreen()
         Window.GetSurface().blit(Paddle.GetSurface(), Paddle.GetPosition())
         Window.GetSurface().blit(Ball.GetSurface(), Ball.GetPosition())
+
+        Window.GetSurface().blit(SingleBrick.GetSurface(), SingleBrick.GetPosition())
 
         Window.GetSurface().blit(TopBoundary.GetSurface(), TopBoundary.GetPosition())
 
