@@ -170,6 +170,12 @@ class Brick(mySprite):
         self._Surface.fill(self._Color)
         self.__Health = HEALTH
 
+    # def __str__(self):
+    #     return self.GetPosition()
+    
+    # def __repr__(self):
+    #     return f"{self.__str__()}"
+
     def isCollision(self, Width, Height, Position):
         if mySprite.isCollision(Width, Height, Position) is True: # MAYBE USE POLYMORPHISM HERE
             pass
@@ -202,19 +208,24 @@ class UpperBlock(mySprite):
 # --- INPUTS ---
 
 # --- PROCESSING ---
-def CreateBricks(NUM_BRICKS, LEVEL, WIDTH, HEIGHT): # INCOMPELTE AT THE MOMENT
+def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT): # INCOMPELTE AT THE MOMENT
     BricksArr = []
-    StartX = 0
-    StartY = 0
+    PaddingX = 10
+    PaddingY = 10
     if LEVEL > 4:
         MaxHealth = 4
     else:
         MaxHealth = LEVEL
-    for i in range(NUM_BRICKS):
-        Health = random.randint(1, MaxHealth)
-        XPOS = (StartX + WIDTH + 10)*(i % 6)
-        YPOS = (StartY + HEIGHT + 10) # FIX THIS
-        BricksArr.append(Brick(Health, WIDTH, HEIGHT))
+    for i in range(NUM_ROWS):
+        for j in range(NUM_COLUMNS):
+            Health = random.randint(1, MaxHealth)
+            # XPOS = (StartX + WIDTH + 10)*(i % 6)
+            # YPOS = (StartY + HEIGHT + 10) # FIX THIS
+            XPOS = (PaddingX + WIDTH)*j + 60
+            YPOS = (PaddingY + HEIGHT)*i + 80
+            BricksArr.append(Brick(Health, WIDTH, HEIGHT, XPOS, YPOS))
+
+    return BricksArr
 
 
 # --- OUTPUTS ---
@@ -255,6 +266,8 @@ if __name__ == "__main__":
     Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2)
 
     SingleBrick = Brick(1, 65, 35, 100, 100)
+
+    BricksList = CreateBricks(6, 6, 2, 50, 35)
 
     while True:
         # --- INPUTS ---
@@ -310,10 +323,14 @@ if __name__ == "__main__":
 
         # --- OUTPUTS ---
         Window.ClearScreen()
+
+        for brick in BricksList:
+            Window.GetSurface().blit(brick.GetSurface(), brick.GetPosition())
+
         Window.GetSurface().blit(Paddle.GetSurface(), Paddle.GetPosition())
         Window.GetSurface().blit(Ball.GetSurface(), Ball.GetPosition())
 
-        Window.GetSurface().blit(SingleBrick.GetSurface(), SingleBrick.GetPosition())
+        # Window.GetSurface().blit(SingleBrick.GetSurface(), SingleBrick.GetPosition())
 
         Window.GetSurface().blit(TopBoundary.GetSurface(), TopBoundary.GetPosition())
 
