@@ -78,16 +78,16 @@ class mySprite:
             self.__x -= self.__Speed
         self.SetPosition(self.__x, self.__y)
 
-    # def WASDmove(self, PRESSED_KEYS):
-    #     if PRESSED_KEYS[pygame.K_d] == 1:
-    #         self.__x += self.__Speed
-    #     if PRESSED_KEYS[pygame.K_a] == 1:
-    #         self.__x -= self.__Speed
-    #     if PRESSED_KEYS[pygame.K_w] == 1:
-    #         self.__y -= self.__Speed
-    #     if PRESSED_KEYS[pygame.K_s] == 1:
-    #         self.__y += self.__Speed
-    #     self.SetPosition(self.__x, self.__y)
+    def WASDmove(self, PRESSED_KEYS):
+        if PRESSED_KEYS[pygame.K_d] == 1:
+            self.__x += self.__Speed
+        if PRESSED_KEYS[pygame.K_a] == 1:
+            self.__x -= self.__Speed
+        if PRESSED_KEYS[pygame.K_w] == 1:
+            self.__y -= self.__Speed
+        if PRESSED_KEYS[pygame.K_s] == 1:
+            self.__y += self.__Speed
+        self.SetPosition(self.__x, self.__y)
 
     def CheckBoundaries(self, MAX_X, MAX_Y, MIN_X=0, MIN_Y=0):
         if self.__x > MAX_X - self.GetWidth():
@@ -156,6 +156,63 @@ class BallSprite(mySprite):
             self.ChangeDirY(1)
         elif POSITION[1] + self.GetHeight() > MAX_Y: # Player lose so change this
             self.ChangeDirY(-1)
+    
+    def isCollision(self, Width, Height, Position, BrickObj):
+        """
+        Use the width, height and position of an external sprite to test if it is colliding with the given sprite
+        :param WIDTH: int
+        :param HEIGHT: int
+        :param POS: tuple
+        :return:
+        """
+        if mySprite.isCollision(self, Width, Height, Position) is True: # MAYBE USE POLYMORPHISM HERE
+            BallPosition = Ball.GetPosition()
+            BallX = BallPosition[0]
+            BallY = BallPosition[1]
+
+            BallVertices = [
+                (BallX, BallY), # Top-left vertex
+                (BallX + self.GetWidth(), BallY), # Top-right vertex
+                (BallX, BallY + self.GetHeight()), # Bottom-left vertex
+                (BallX + self.GetWidth(), BallY + self.GetHeight()) # Bottom-right vertex
+                ]
+
+            BrickX = Position[0]
+            BrickY = Position[1]
+
+            BrickLeftSide = BrickX
+            BrickRightSide = BrickX + Width
+            BrickTopSide = BrickY
+            BrickBottomSide = BrickY + Height
+
+            for VertexX, VertexY in BallVertices:
+                # Check to make sure the vertex collides with the ball
+                if (VertexX >= BrickLeftSide and VertexX <= BrickRightSide) and (VertexY >= BrickTopSide and VertexY <= BrickBottomSide):
+                    # Find the distance VertexX is to right and left side, and find the distance VertexY is to top and bottom side.
+                    LeftSideDistance = abs(VertexX - BrickLeftSide)
+                    RightSideDistance = abs(VertexX - BrickRightSide)
+                    TopSideDistance = abs(VertexY - BrickTopSide)
+                    BottomSideDistance = abs(VertexY - BrickBottomSide)
+
+                    # Minimum distance the vertex is to one side tells us which side of the brick the ball collided with
+                    MinDistance = min(LeftSideDistance, RightSideDistance, TopSideDistance, BottomSideDistance)
+
+                    # Check the minimum distance value to determine which direction needs to be reversed
+                    if MinDistance == LeftSideDistance or MinDistance == RightSideDistance: # The ball hit the left or right edge so x-direction needs to be reversed
+                        Ball.ChangeDirX(Ball.GetDirX()*-1)
+                    # Use another if-statement just in case the Ball's vertex collided with the Brick's vertex
+                    if MinDistance == TopSideDistance or MinDistance == BottomSideDistance: # The ball hit the top or bottom side so reverse the y-direction
+                        Ball.ChangeDirY(Ball.GetDirY()*-1)
+                    
+                    BrickObj.LoseHealth()
+
+                    break
+            
+
+            # if (BallX >= BrickX or BallX + self.GetWidth() <= BrickX + Width) and BallY:
+
+            # if (BrickX <= BallX <= BrickX + Width)
+            
 
 class PaddleSprite(mySprite):
     def __init__(self, Width=1, Height=1):
@@ -175,10 +232,6 @@ class Brick(mySprite):
     
     # def __repr__(self):
     #     return f"{self.__str__()}"
-
-    def isCollision(self, Width, Height, Position):
-        if mySprite.isCollision(Width, Height, Position) is True: # MAYBE USE POLYMORPHISM HERE
-            pass
 
     def LoseHealth(self):
         self.__Health -= 1
@@ -208,7 +261,7 @@ class UpperBlock(mySprite):
 # --- INPUTS ---
 
 # --- PROCESSING ---
-def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT): # INCOMPELTE AT THE MOMENT
+def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS): # INCOMPELTE AT THE MOMENT
     BricksArr = []
     PaddingX = 10
     PaddingY = 10
@@ -224,6 +277,7 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT): # INCOMPELTE AT T
             XPOS = (PaddingX + WIDTH)*j + 60
             YPOS = (PaddingY + HEIGHT)*i + 80
             BricksArr.append(Brick(Health, WIDTH, HEIGHT, XPOS, YPOS))
+            BricksArr[-1].SetColor(COLORS[Health])
 
     return BricksArr
 
@@ -263,11 +317,11 @@ if __name__ == "__main__":
     Paddle.SetPosition(Window.GetWidth()/2 - Paddle.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 30)
 
     Ball = BallSprite(20, 20, 4.5)
-    Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2)
+    Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2 + 40)
 
-    SingleBrick = Brick(1, 65, 35, 100, 100)
+    SingleBrick = Brick(1, 65, 35, 250, 400)
 
-    BricksList = CreateBricks(6, 6, 2, 50, 35)
+    BricksList = CreateBricks(6, 6, Level, 50, 35, BrickColors)
 
     while True:
         # --- INPUTS ---
@@ -282,7 +336,20 @@ if __name__ == "__main__":
         Paddle.CheckBoundaries(Window.GetWidth(), Window.GetHeight())
 
         Ball.Move(Ball.GetPosition())
+        # Ball.WASDmove(PRESSED_KEYS)
         Ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
+        # Ball.isCollision(SingleBrick.GetWidth(), SingleBrick.GetHeight(), SingleBrick.GetPosition(), None)
+
+        for brick in BricksList:
+            Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition(), brick)
+            if brick.GetHealth() <= 0:
+                BricksList.remove(brick)
+            else:
+                brick.SetColor(BrickColors[brick.GetHealth()])
+        
+        if len(BricksList) == 0:
+            Level += 1
+            BricksList = CreateBricks(6, 6, Level, 50, 35, BrickColors)
 
         if Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
             # Ball.ChangeDirY(Ball.GetDirY()*-1)
