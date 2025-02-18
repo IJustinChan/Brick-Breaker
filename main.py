@@ -204,15 +204,10 @@ class BallSprite(mySprite):
                     if MinDistance == TopSideDistance or MinDistance == BottomSideDistance: # The ball hit the top or bottom side so reverse the y-direction
                         Ball.ChangeDirY(Ball.GetDirY()*-1)
                     
-                    BrickObj.LoseHealth()
+                    # BrickObj.LoseHealth()
 
-                    break
-            
-
-            # if (BallX >= BrickX or BallX + self.GetWidth() <= BrickX + Width) and BallY:
-
-            # if (BrickX <= BallX <= BrickX + Width)
-            
+                    return True
+            return False # No collision between the ball and brick
 
 class PaddleSprite(mySprite):
     def __init__(self, Width=1, Height=1):
@@ -232,10 +227,18 @@ class Brick(mySprite):
     
     # def __repr__(self):
     #     return f"{self.__str__()}"
+    
+    # --- Methods ---
 
     def LoseHealth(self):
         self.__Health -= 1
+    
+    def MoveDown(self, POSITION, SPEED):
+        PositionX = POSITION[0]
+        PositionY = POSITION[1] + SPEED
+        self.SetPosition(PositionX, PositionY)
 
+    # --- Accessors ---
     def GetHealth(self):
         return self.__Health
 
@@ -261,7 +264,7 @@ class UpperBlock(mySprite):
 # --- INPUTS ---
 
 # --- PROCESSING ---
-def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS): # INCOMPELTE AT THE MOMENT
+def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCREEN=True): # INCOMPELTE AT THE MOMENT
     BricksArr = []
     PaddingX = 10
     PaddingY = 10
@@ -269,13 +272,15 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS): # INCOMPE
         MaxHealth = 4
     else:
         MaxHealth = LEVEL
+    MaxY = (NUM_ROWS - 1)*(PaddingY + HEIGHT) # Makes it 80 pixels above the screen
     for i in range(NUM_ROWS):
         for j in range(NUM_COLUMNS):
             Health = random.randint(1, MaxHealth)
-            # XPOS = (StartX + WIDTH + 10)*(i % 6)
-            # YPOS = (StartY + HEIGHT + 10) # FIX THIS
             XPOS = (PaddingX + WIDTH)*j + 60
-            YPOS = (PaddingY + HEIGHT)*i + 80
+            if INSIDE_SCREEN is True:
+                YPOS = (PaddingY + HEIGHT)*i + 80
+            else:
+                YPOS = (PaddingY + HEIGHT)*i - MaxY #+ 100  #- 250 # + 80
             BricksArr.append(Brick(Health, WIDTH, HEIGHT, XPOS, YPOS))
             BricksArr[-1].SetColor(COLORS[Health])
 
@@ -321,7 +326,14 @@ if __name__ == "__main__":
 
     SingleBrick = Brick(1, 65, 35, 250, 400)
 
-    BricksList = CreateBricks(6, 6, Level, 50, 35, BrickColors)
+    NumRows = 6
+    NumColumns = 6
+    BrickWidth = 50
+    BrickHeight = 35
+    MoveBricksDown = False
+    Counter = (NumRows - 1)*(10 + BrickHeight) + 80
+
+    BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, True)
 
     while True:
         # --- INPUTS ---
@@ -340,16 +352,27 @@ if __name__ == "__main__":
         Ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
         # Ball.isCollision(SingleBrick.GetWidth(), SingleBrick.GetHeight(), SingleBrick.GetPosition(), None)
 
+        if MoveBricksDown is True:
+            for brick in BricksList:
+                brick.MoveDown(brick.GetPosition(), 4)
+            Counter -= 4
+            if Counter <= 0:
+                MoveBricksDown = False
+
         for brick in BricksList:
-            Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition(), brick)
-            if brick.GetHealth() <= 0:
-                BricksList.remove(brick)
-            else:
-                brick.SetColor(BrickColors[brick.GetHealth()])
+            if Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition(), brick) is True:
+                brick.LoseHealth()
+                Score += 1
+                if brick.GetHealth() <= 0:
+                    BricksList.remove(brick)
+                else:
+                    brick.SetColor(BrickColors[brick.GetHealth()])
         
         if len(BricksList) == 0:
             Level += 1
-            BricksList = CreateBricks(6, 6, Level, 50, 35, BrickColors)
+            BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, False)
+            MoveBricksDown = True
+            Counter = (NumRows - 1)*(10 + BrickHeight) + 80
 
         if Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
             # Ball.ChangeDirY(Ball.GetDirY()*-1)
