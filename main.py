@@ -157,7 +157,7 @@ class BallSprite(mySprite):
         elif POSITION[1] + self.GetHeight() > MAX_Y: # Player lose so change this
             self.ChangeDirY(-1)
     
-    def isCollision(self, Width, Height, Position, BrickObj):
+    def isCollision(self, Width, Height, Position):
         """
         Use the width, height and position of an external sprite to test if it is colliding with the given sprite
         :param WIDTH: int
@@ -165,7 +165,7 @@ class BallSprite(mySprite):
         :param POS: tuple
         :return:
         """
-        if mySprite.isCollision(self, Width, Height, Position) is True: # MAYBE USE POLYMORPHISM HERE
+        if mySprite.isCollision(self, Width, Height, Position) is True: # Polymorphism is utilized here
             BallPosition = Ball.GetPosition()
             BallX = BallPosition[0]
             BallY = BallPosition[1]
@@ -203,8 +203,6 @@ class BallSprite(mySprite):
                     # Use another if-statement just in case the Ball's vertex collided with the Brick's vertex
                     if MinDistance == TopSideDistance or MinDistance == BottomSideDistance: # The ball hit the top or bottom side so reverse the y-direction
                         Ball.ChangeDirY(Ball.GetDirY()*-1)
-                    
-                    # BrickObj.LoseHealth()
 
                     return True
             return False # No collision between the ball and brick
@@ -360,7 +358,7 @@ if __name__ == "__main__":
                 MoveBricksDown = False
 
         for brick in BricksList:
-            if Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition(), brick) is True:
+            if Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition()) is True:
                 brick.LoseHealth()
                 Score += 1
                 if brick.GetHealth() <= 0:
