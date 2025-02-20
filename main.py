@@ -145,6 +145,8 @@ class BallSprite(mySprite):
         PositionY = POSITION[1] + (self.GetSpeed()*self.GetDirY())
         self.SetPosition(PositionX, PositionY)
 
+    # Another example of polymorphism here as the child's class method shares the same name as parent's method
+    # However, it checks boundaries in a different way due to how the ball differs from other sprites
     def CheckBoundaries(self, MAX_X, MAX_Y, MIN_X=0, MIN_Y=0): # Incomplete
         # mySprite.CheckBoundaries(self, MAX_X, MAX_Y, MIN_X=0, MIN_Y=0)
         POSITION = self.GetPosition()
@@ -159,13 +161,16 @@ class BallSprite(mySprite):
     
     def isCollision(self, Width, Height, Position):
         """
-        Use the width, height and position of an external sprite to test if it is colliding with the given sprite
+        Test if the ball has collided with another sprite (mainly the brick)
+        Use the width, height and position of an external sprite to if Ball object is in collision
+        The ball x and y directions are modified accordingly depending on which vertex is hitting the external sprite
         :param WIDTH: int
         :param HEIGHT: int
         :param POS: tuple
         :return:
         """
-        if mySprite.isCollision(self, Width, Height, Position) is True: # Polymorphism is utilized here
+        # Polymorphism is utilized here as the child class modifies the parent's class method
+        if mySprite.isCollision(self, Width, Height, Position) is True:
             BallPosition = Ball.GetPosition()
             BallX = BallPosition[0]
             BallY = BallPosition[1]
@@ -266,10 +271,10 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCR
     BricksArr = []
     PaddingX = 10
     PaddingY = 10
-    if LEVEL > 4:
+    if LEVEL > 3:
         MaxHealth = 4
     else:
-        MaxHealth = LEVEL
+        MaxHealth = LEVEL + 1
     MaxY = (NUM_ROWS - 1)*(PaddingY + HEIGHT) # Makes it 80 pixels above the screen
     for i in range(NUM_ROWS):
         for j in range(NUM_COLUMNS):
@@ -319,8 +324,10 @@ if __name__ == "__main__":
     Paddle = PaddleSprite(100, 10)
     Paddle.SetPosition(Window.GetWidth()/2 - Paddle.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 30)
 
+    BallYInitialPath = [1, -1]
     Ball = BallSprite(20, 20, 4.5)
     Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2 + 40)
+    Ball.ChangeDirX(random.choice(BallYInitialPath))
 
     SingleBrick = Brick(1, 65, 35, 250, 400)
 
