@@ -190,6 +190,9 @@ class BallSprite(mySprite):
             BrickTopSide = BrickY
             BrickBottomSide = BrickY + Height
 
+            XDirChanged = False
+            YDirChanged = False
+
             for VertexX, VertexY in BallVertices:
                 # Check to make sure the vertex collides with the ball
                 if (VertexX >= BrickLeftSide and VertexX <= BrickRightSide) and (VertexY >= BrickTopSide and VertexY <= BrickBottomSide):
@@ -204,13 +207,17 @@ class BallSprite(mySprite):
 
                     # Check the minimum distance value to determine which direction needs to be reversed
                     if MinDistance == LeftSideDistance or MinDistance == RightSideDistance: # The ball hit the left or right edge so x-direction needs to be reversed
-                        Ball.ChangeDirX(Ball.GetDirX()*-1)
+                        if XDirChanged is False:
+                            Ball.ChangeDirX(Ball.GetDirX()*-1)
+                            XDirChanged = True
                     # Use another if-statement just in case the Ball's vertex collided with the Brick's vertex
                     if MinDistance == TopSideDistance or MinDistance == BottomSideDistance: # The ball hit the top or bottom side so reverse the y-direction
-                        Ball.ChangeDirY(Ball.GetDirY()*-1)
+                        if YDirChanged is False:
+                            Ball.ChangeDirY(Ball.GetDirY()*-1)
+                            YDirChanged = True
 
-                    return True
-            return False # No collision between the ball and brick
+            return True
+        return False # No collision between the ball and brick
 
 class PaddleSprite(mySprite):
     def __init__(self, Width=1, Height=1):
@@ -267,7 +274,7 @@ class UpperBlock(mySprite):
 # --- INPUTS ---
 
 # --- PROCESSING ---
-def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCREEN=True): # INCOMPELTE AT THE MOMENT
+def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCREEN=True):
     BricksArr = []
     PaddingX = 10
     PaddingY = 10
@@ -318,6 +325,9 @@ if __name__ == "__main__":
     LevelText = TextSprite("Level: " + str(Level), "Comic sans", 25)
     LevelText.SetPosition(Window.GetWidth() - LevelText.GetWidth() - 10, 0)
 
+    StartText = TextSprite("Press SPACE to start!", "Comic sans", 30)
+    StartText.SetPosition(Window.GetWidth()/2 - StartText.GetWidth()/2, Window.GetHeight()/2 + 30)
+
     TopBoundary = UpperBlock(Window.GetWidth(), 50)
     TopBoundary.SetColor((0, 0, 0))
 
@@ -326,7 +336,8 @@ if __name__ == "__main__":
 
     BallYInitialPath = [1, -1]
     Ball = BallSprite(20, 20, 4.5)
-    Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2 + 40)
+    Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2 - 130)
+    # Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 80)
     Ball.ChangeDirX(random.choice(BallYInitialPath))
 
     SingleBrick = Brick(1, 65, 35, 250, 400)
@@ -335,10 +346,12 @@ if __name__ == "__main__":
     NumColumns = 6
     BrickWidth = 50
     BrickHeight = 35
-    MoveBricksDown = False
+    MoveBricksDown = True
     Counter = (NumRows - 1)*(10 + BrickHeight) + 80
 
-    BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, True)
+    BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, False)
+
+    StartGame = False
 
     while True:
         # --- INPUTS ---
@@ -348,76 +361,84 @@ if __name__ == "__main__":
                 exit()
 
         PRESSED_KEYS = pygame.key.get_pressed()
+
         # --- PROCESSING ---
-        Paddle.LeftRightMove(PRESSED_KEYS)
-        Paddle.CheckBoundaries(Window.GetWidth(), Window.GetHeight())
+        if StartGame is False:
+            if PRESSED_KEYS[pygame.K_SPACE]:
+                StartGame = True
+        else:
+            Paddle.LeftRightMove(PRESSED_KEYS)
+            Paddle.CheckBoundaries(Window.GetWidth(), Window.GetHeight())
 
-        Ball.Move(Ball.GetPosition())
-        # Ball.WASDmove(PRESSED_KEYS)
-        Ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
-        # Ball.isCollision(SingleBrick.GetWidth(), SingleBrick.GetHeight(), SingleBrick.GetPosition(), None)
+            Ball.Move(Ball.GetPosition())
+            # Ball.WASDmove(PRESSED_KEYS)
+            Ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
+            # Ball.isCollision(SingleBrick.GetWidth(), SingleBrick.GetHeight(), SingleBrick.GetPosition(), None)
 
-        if MoveBricksDown is True:
+            if MoveBricksDown is True:
+                for brick in BricksList:
+                    brick.MoveDown(brick.GetPosition(), 4)
+                Counter -= 4
+                if Counter <= 0:
+                    MoveBricksDown = False
+
             for brick in BricksList:
-                brick.MoveDown(brick.GetPosition(), 4)
-            Counter -= 4
-            if Counter <= 0:
-                MoveBricksDown = False
-
-        for brick in BricksList:
-            if Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition()) is True:
-                brick.LoseHealth()
-                Score += 1
-                if brick.GetHealth() <= 0:
-                    BricksList.remove(brick)
-                else:
-                    brick.SetColor(BrickColors[brick.GetHealth()])
-        
-        if len(BricksList) == 0:
-            Level += 1
-            BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, False)
-            MoveBricksDown = True
-            Counter = (NumRows - 1)*(10 + BrickHeight) + 80
-
-        if Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
-            # Ball.ChangeDirY(Ball.GetDirY()*-1)
-            BallPosition = Ball.GetPosition()
-            BallX = BallPosition[0]
-            BallY = BallPosition[1]
+                if Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition()) is True:
+                    brick.LoseHealth()
+                    Score += 1
+                    if brick.GetHealth() <= 0:
+                        BricksList.remove(brick)
+                    else:
+                        brick.SetColor(BrickColors[brick.GetHealth()])
             
-            PaddlePosition = Paddle.GetPosition()
-            PaddleX = PaddlePosition[0]
-            PaddleY = PaddlePosition[1]
+            if len(BricksList) == 0:
+                Level += 1
+                BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, False)
+                MoveBricksDown = True
+                Counter = (NumRows - 1)*(10 + BrickHeight) + 80
 
-            # --- Maybe put this inside a function ---
-            Ball_BottomRight = (BallX + Ball.GetWidth(), BallY + Ball.GetHeight())
-            Ball_BottomLeft = (BallX, BallY + Ball.GetHeight())
+            if Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
+                # Ball.ChangeDirY(Ball.GetDirY()*-1)
+                BallPosition = Ball.GetPosition()
+                BallX = BallPosition[0]
+                BallY = BallPosition[1]
+                
+                PaddlePosition = Paddle.GetPosition()
+                PaddleX = PaddlePosition[0]
+                PaddleY = PaddlePosition[1]
 
-            if BallX >= PaddleX and BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth():
-                Ball.ChangeDirY(Ball.GetDirY()*-1)
-            else:
-                if BallX >= PaddleX and BallX + Ball.GetWidth() > PaddleX + Paddle.GetWidth() and Ball.GetDirX() == 1:
-                    Ball.ChangeDirY(Ball.GetDirY() * -1)
-                elif BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth() and BallX < PaddleX and Ball.GetDirX() == -1:
-                    Ball.ChangeDirY(Ball.GetDirY() * -1)
-                else:
+                # --- Maybe put this inside a function ---
+                Ball_BottomRight = (BallX + Ball.GetWidth(), BallY + Ball.GetHeight())
+                Ball_BottomLeft = (BallX, BallY + Ball.GetHeight())
+
+                if BallX >= PaddleX and BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth():
                     Ball.ChangeDirY(Ball.GetDirY()*-1)
-                    Ball.ChangeDirX(Ball.GetDirX()*-1)
+                else:
+                    if BallX >= PaddleX and BallX + Ball.GetWidth() > PaddleX + Paddle.GetWidth() and Ball.GetDirX() == 1:
+                        Ball.ChangeDirY(Ball.GetDirY() * -1)
+                    elif BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth() and BallX < PaddleX and Ball.GetDirX() == -1:
+                        Ball.ChangeDirY(Ball.GetDirY() * -1)
+                    else:
+                        Ball.ChangeDirY(Ball.GetDirY()*-1)
+                        Ball.ChangeDirX(Ball.GetDirX()*-1)
 
-            while Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
-                Ball.Move(Ball.GetPosition())
+                while Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
+                    Ball.Move(Ball.GetPosition())
 
-            # Ball.SetPosition(Ball.GetPosition()[0], Paddle.GetPosition()[1])
-            # Ball.ChangeDirX(Ball.GetDirX()*-1)
+                # Ball.SetPosition(Ball.GetPosition()[0], Paddle.GetPosition()[1])
+                # Ball.ChangeDirX(Ball.GetDirX()*-1)
 
 
-        ScoreText.UpdateText("Score: " + str(Score)) # Maybe an if-statement for this when the score actually changes
+            ScoreText.UpdateText("Score: " + str(Score)) # Maybe an if-statement for this when the score actually changes
 
-        LevelText.UpdateText("Level: " + str(Level)) # Put this after a level has been cleared
-        LevelText.SetPosition(Window.GetWidth() - LevelText.GetWidth() - 10, 0)
+            LevelText.UpdateText("Level: " + str(Level)) # Put this after a level has been cleared
+            LevelText.SetPosition(Window.GetWidth() - LevelText.GetWidth() - 10, 0)
 
         # --- OUTPUTS ---
         Window.ClearScreen()
+
+        if StartGame is False:
+            Window.GetSurface().blit(StartText.GetSurface(), StartText.GetPosition())
 
         for brick in BricksList:
             Window.GetSurface().blit(brick.GetSurface(), brick.GetPosition())

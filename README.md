@@ -27,7 +27,6 @@ with them. Thus, it may take multiple hits from the ball to destroy one brick. A
 will spawn. On level one, bricks either have a health of one or two. On level two, the bricks will have a health up to three.
 On level three, the bricks will have a health up to four. Afterwards, the brick's health will not increase as I think it makes
 the game feel too monotonous if it begins taking a long time to destroy bricks.
-
 2. 
 
 ## Planning Components
