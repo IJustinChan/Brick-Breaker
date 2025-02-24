@@ -158,6 +158,12 @@ class BallSprite(mySprite):
             self.ChangeDirY(1)
         elif POSITION[1] + self.GetHeight() > MAX_Y: # Player lose so change this
             self.ChangeDirY(-1)
+
+    def HitBottomEdge(self, MAX_Y):
+        POSITION = self.GetPosition()
+        if POSITION[1] + self.GetHeight() > MAX_Y:
+            return True
+        return False
     
     def isCollision(self, Width, Height, Position):
         """
@@ -219,11 +225,25 @@ class BallSprite(mySprite):
             return True
         return False # No collision between the ball and brick
 
+    def SetBallAtPaddle(self, PADDLE_POS, WIDTH, HEIGHT):
+        PaddleX = PADDLE_POS[0]
+        PaddleY = PADDLE_POS[1]
+
+        Ball.SetPosition(PaddleX + (WIDTH/2) - Ball.GetWidth()/2, PaddleY - Ball.GetHeight())
+
 class PaddleSprite(mySprite):
     def __init__(self, Width=1, Height=1):
         mySprite.__init__(self, Width, Height)
         self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
         self._Surface.fill(self._Color)
+
+    def LaunchBall(self, PRESSED_KEYS, BALL):
+        if PRESSED_KEYS[pygame.K_d] == 1 or PRESSED_KEYS[pygame.K_RIGHT] == 1:
+            BALL.ChangeDirX(1)
+        elif PRESSED_KEYS[pygame.K_a] == 1 or PRESSED_KEYS[pygame.K_LEFT] == 1:
+            BALL.ChangeDirX(-1)
+        else:
+            BALL.ChangeDirX(1)
 
 class Brick(mySprite):
     def __init__(self, HEALTH, Width=1, Height=1, X=0, Y=0):
@@ -314,6 +334,7 @@ if __name__ == "__main__":
     # --- Variables ---
     Score = 0
     Level = 1
+    Lives = 3
 
     # --- Text Sprites ---
     TitleText = TextSprite("BRICK BREAKER!", "Comic sans", 25)
@@ -322,36 +343,45 @@ if __name__ == "__main__":
     ScoreText = TextSprite("Score: " + str(Score), "Comic sans", 25)
     ScoreText.SetPosition(0, 0)
 
-    LevelText = TextSprite("Level: " + str(Level), "Comic sans", 25)
+    LevelText = TextSprite("Level: " + str(Level), "Comic sans", 18)
     LevelText.SetPosition(Window.GetWidth() - LevelText.GetWidth() - 10, 0)
 
     StartText = TextSprite("Press SPACE to start!", "Comic sans", 30)
-    StartText.SetPosition(Window.GetWidth()/2 - StartText.GetWidth()/2, Window.GetHeight()/2 + 30)
+    StartText.SetPosition(Window.GetWidth()/2 - StartText.GetWidth()/2, Window.GetHeight()/2 + 80)
 
+    LivesText = TextSprite("Lives: " + str(Lives), "Comic sans", 18)
+    LivesText.SetPosition(Window.GetWidth() - LivesText.GetWidth() - 10, LevelText.GetHeight())
+
+    # --- Other Sprites ---
     TopBoundary = UpperBlock(Window.GetWidth(), 50)
     TopBoundary.SetColor((0, 0, 0))
 
     Paddle = PaddleSprite(100, 10)
     Paddle.SetPosition(Window.GetWidth()/2 - Paddle.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 30)
 
-    BallYInitialPath = [1, -1]
+    # BallYInitialPath = [1, -1]
     Ball = BallSprite(20, 20, 4.5)
-    Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2 - 130)
+    PaddleStartPos = Paddle.GetPosition()
+    Ball.SetBallAtPaddle(PaddleStartPos, Paddle.GetWidth(), Paddle.GetHeight())
+
+    # Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2 - 130) # Main
     # Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 80)
-    Ball.ChangeDirX(random.choice(BallYInitialPath))
+    # Ball.ChangeDirX(random.choice(BallYInitialPath))
 
     SingleBrick = Brick(1, 65, 35, 250, 400)
 
+    # --- Brick variables ---
     NumRows = 6
     NumColumns = 6
     BrickWidth = 50
     BrickHeight = 35
-    MoveBricksDown = True
+    MoveBricksDown = False
     Counter = (NumRows - 1)*(10 + BrickHeight) + 80
 
-    BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, False)
+    BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, True)
 
-    StartGame = False
+    StartGame = False # Game only starts once the player presses the space bar
+    CanShootBall = True # Set it to True so player can shoot the ball at the beginning of the game
 
     while True:
         # --- INPUTS ---
@@ -370,9 +400,23 @@ if __name__ == "__main__":
             Paddle.LeftRightMove(PRESSED_KEYS)
             Paddle.CheckBoundaries(Window.GetWidth(), Window.GetHeight())
 
-            Ball.Move(Ball.GetPosition())
+            if CanShootBall is True:
+                Ball.SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth(), Paddle.GetHeight())
+                if PRESSED_KEYS[pygame.K_b] == 1:
+                    Paddle.LaunchBall(PRESSED_KEYS, Ball)
+                    CanShootBall = False
+            else:
+                Ball.Move(Ball.GetPosition())
             # Ball.WASDmove(PRESSED_KEYS)
             Ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
+
+            # if Ball.HitBottomEdge(Window.GetHeight()) is True:
+            #     Lives -= 1
+            #     if Lives <= 0:
+            #         pass # End the game
+            #     else:
+            #         pass
+
             # Ball.isCollision(SingleBrick.GetWidth(), SingleBrick.GetHeight(), SingleBrick.GetPosition(), None)
 
             if MoveBricksDown is True:
@@ -408,8 +452,6 @@ if __name__ == "__main__":
                 PaddleY = PaddlePosition[1]
 
                 # --- Maybe put this inside a function ---
-                Ball_BottomRight = (BallX + Ball.GetWidth(), BallY + Ball.GetHeight())
-                Ball_BottomLeft = (BallX, BallY + Ball.GetHeight())
 
                 if BallX >= PaddleX and BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth():
                     Ball.ChangeDirY(Ball.GetDirY()*-1)
@@ -453,6 +495,7 @@ if __name__ == "__main__":
         Window.GetSurface().blit(TitleText.GetSurface(), TitleText.GetPosition())
         Window.GetSurface().blit(ScoreText.GetSurface(), ScoreText.GetPosition())
         Window.GetSurface().blit(LevelText.GetSurface(), LevelText.GetPosition())
+        Window.GetSurface().blit(LivesText.GetSurface(), LivesText.GetPosition())
         Window.UpdateFrame()
 
 
