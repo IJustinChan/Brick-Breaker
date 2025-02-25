@@ -229,7 +229,7 @@ class BallSprite(mySprite):
         PaddleX = PADDLE_POS[0]
         PaddleY = PADDLE_POS[1]
 
-        Ball.SetPosition(PaddleX + (WIDTH/2) - Ball.GetWidth()/2, PaddleY - Ball.GetHeight())
+        Ball.SetPosition(PaddleX + (WIDTH/2) - Ball.GetWidth()/2, PaddleY - Ball.GetHeight() - 5)
 
 class PaddleSprite(mySprite):
     def __init__(self, Width=1, Height=1):
@@ -417,7 +417,7 @@ if __name__ == "__main__":
             #     else:
             #         pass
 
-            # Ball.isCollision(SingleBrick.GetWidth(), SingleBrick.GetHeight(), SingleBrick.GetPosition(), None)
+            # Ball.isCollision(SingleBrick.GetWidth(), SingleBrick.GetHeight(), SdingleBrick.GetPosition(), None)
 
             if MoveBricksDown is True:
                 for brick in BricksList:
