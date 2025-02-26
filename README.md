@@ -4,15 +4,20 @@
 This program remakes the game Brick Breaker. The goal of this game is score as many points as possible.
 To score points, the player needs to control a paddle to bounce the ball into bricks. Each time a brick is
 hit, the score increases by one. However, the player also needs to prevent the ball from touching the bottom
-of the screen as this would result in the player losing since the ball "fell down". 
+of the screen as this would result in the player a life. The player has three lives so if the ball touches
+the bottom three times, the game ends.
 
 To complete a level, the player must successfully destroy all the bricks in that level. Once a level is completed, 
 new bricks will come down, indicating the start of a new level. This game has no end, meaning the game will
-continue as long as the ball has not touched the bottom of the screen. This also means that the player only
-has one life, so the game is over as soon as the player fails to bounce the ball up with the paddle.
+continue as long as the player has lives remaining. 
 
 The paddle can be controlled using the left and right arrow keys, as well as the keys "A" and "D".
 Pressing the left arrow key or "A" moves the paddle left while pressing the right arrow key or "D" moves the paddle right.
+
+At the start of the game, and after the player loses a life, the player can "launch" the ball from their 
+paddle, which means the ball will move up from wherever the paddle is. To "launch" the ball, press either 
+the "W" key or up arrow key. The ball will go towards the left if the left movement key is held otherwise it will
+go towards the right, regardless if the right movement is held.
 
 One final note about the paddle: If the ball is coming in from the left side, and it hits exactly the left side
 of the paddle, it will bounce back along its path. Similarly, if the ball is coming in from the right side, and

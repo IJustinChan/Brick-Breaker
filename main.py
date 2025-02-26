@@ -40,6 +40,8 @@ class WINDOW:
 
 class mySprite:
     def __init__(self, Width=1, Height=1, x=0, y=0, Speed=5, Color=(255, 255, 255)):
+        # Encapsulation is used here for most of these attributes to protect them
+        # This makes it so they can only be accessed using setter and getter methods
         self.__Width = Width
         self.__Height = Height
         self._Dimensions = (self.__Width, self.__Height)
@@ -134,7 +136,7 @@ class mySprite:
     def GetSpeed(self):
         return self.__Speed
 
-class BallSprite(mySprite):
+class BallSprite(mySprite): # Inheritance is used here as the ball sprite is inheriting the properties from parent class mySprite
     def __init__(self, Width=1, Height=1, Speed=5):
         mySprite.__init__(self, Width=Width, Height=Height, Speed=Speed)
         self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
@@ -156,12 +158,12 @@ class BallSprite(mySprite):
             self.ChangeDirX(1)
         elif POSITION[1] < MIN_Y:
             self.ChangeDirY(1)
-        elif POSITION[1] + self.GetHeight() > MAX_Y: # Player lose so change this
-            self.ChangeDirY(-1)
+        # elif POSITION[1] + self.GetHeight() > MAX_Y: # Player lose so change this
+        #     self.ChangeDirY(-1)
 
     def HitBottomEdge(self, MAX_Y):
-        POSITION = self.GetPosition()
-        if POSITION[1] + self.GetHeight() > MAX_Y:
+        Position = self.GetPosition()
+        if Position[1] > MAX_Y:
             return True
         return False
     
@@ -225,7 +227,7 @@ class BallSprite(mySprite):
             return True
         return False # No collision between the ball and brick
 
-    def SetBallAtPaddle(self, PADDLE_POS, WIDTH, HEIGHT):
+    def SetBallAtPaddle(self, PADDLE_POS, WIDTH):
         PaddleX = PADDLE_POS[0]
         PaddleY = PADDLE_POS[1]
 
@@ -247,6 +249,8 @@ class PaddleSprite(mySprite):
 
 class Brick(mySprite):
     def __init__(self, HEALTH, Width=1, Height=1, X=0, Y=0):
+        # Abstraction is utilized here where the Brick class only has attributes needed for this program
+        # Important attributes of the brick include its health, width, legnth, x and y position,
         mySprite.__init__(self, Width, Height, x=X, y=Y)
         self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
         self._Surface.fill(self._Color)
@@ -291,6 +295,12 @@ class UpperBlock(mySprite):
         self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
         self._Surface.fill(self._Color)
 
+class PowerUpSprite():
+    pass
+
+class PowerUpBrickSprite():
+    pass
+
 # --- INPUTS ---
 
 # --- PROCESSING ---
@@ -311,6 +321,7 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCR
                 YPOS = (PaddingY + HEIGHT)*i + 80
             else:
                 YPOS = (PaddingY + HEIGHT)*i - MaxY #+ 100  #- 250 # + 80
+            # Aggregation is implemented here as the brick objects are being placed into the same list
             BricksArr.append(Brick(Health, WIDTH, HEIGHT, XPOS, YPOS))
             BricksArr[-1].SetColor(COLORS[Health])
 
@@ -362,7 +373,7 @@ if __name__ == "__main__":
     # BallYInitialPath = [1, -1]
     Ball = BallSprite(20, 20, 4.5)
     PaddleStartPos = Paddle.GetPosition()
-    Ball.SetBallAtPaddle(PaddleStartPos, Paddle.GetWidth(), Paddle.GetHeight())
+    Ball.SetBallAtPaddle(PaddleStartPos, Paddle.GetWidth())
 
     # Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2 - 130) # Main
     # Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 80)
@@ -378,6 +389,7 @@ if __name__ == "__main__":
     MoveBricksDown = False
     Counter = (NumRows - 1)*(10 + BrickHeight) + 80
 
+    # Aggregation is utilized here where we create a list that stores individual objects
     BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, True)
 
     StartGame = False # Game only starts once the player presses the space bar
@@ -401,8 +413,8 @@ if __name__ == "__main__":
             Paddle.CheckBoundaries(Window.GetWidth(), Window.GetHeight())
 
             if CanShootBall is True:
-                Ball.SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth(), Paddle.GetHeight())
-                if PRESSED_KEYS[pygame.K_b] == 1:
+                Ball.SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth())
+                if PRESSED_KEYS[pygame.K_UP] == 1 or PRESSED_KEYS[pygame.K_w] == 1:
                     Paddle.LaunchBall(PRESSED_KEYS, Ball)
                     CanShootBall = False
             else:
@@ -410,12 +422,14 @@ if __name__ == "__main__":
             # Ball.WASDmove(PRESSED_KEYS)
             Ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
 
-            # if Ball.HitBottomEdge(Window.GetHeight()) is True:
-            #     Lives -= 1
-            #     if Lives <= 0:
-            #         pass # End the game
-            #     else:
-            #         pass
+            if Ball.HitBottomEdge(Window.GetHeight()) is True:
+                Lives -= 1
+                if Lives <= 0:
+                    exit() # Stop the program for now
+                    pass # End the game
+                else:
+                    Ball.SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth())
+                    CanShootBall = True
 
             # Ball.isCollision(SingleBrick.GetWidth(), SingleBrick.GetHeight(), SdingleBrick.GetPosition(), None)
 
@@ -434,6 +448,21 @@ if __name__ == "__main__":
                         BricksList.remove(brick)
                     else:
                         brick.SetColor(BrickColors[brick.GetHealth()])
+
+            # CollisionBricks = []
+            # for brick in BricksList[:]:
+            #     if Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition()) is True:
+            #         CollisionBricks.append(brick)
+            #         BricksList.remove(brick)
+            #
+            # for brick in CollisionBricks
+
+                    # brick.LoseHealth()
+                    # Score += 1
+                    # if brick.GetHealth() <= 0:
+                    #     BricksList.remove(brick)
+                    # else:
+                    #     brick.SetColor(BrickColors[brick.GetHealth()])
             
             if len(BricksList) == 0:
                 Level += 1
@@ -475,6 +504,9 @@ if __name__ == "__main__":
 
             LevelText.UpdateText("Level: " + str(Level)) # Put this after a level has been cleared
             LevelText.SetPosition(Window.GetWidth() - LevelText.GetWidth() - 10, 0)
+
+            LivesText.UpdateText("Lives: " + str(Lives))
+            LivesText.SetPosition(Window.GetWidth() - LivesText.GetWidth() - 10, LevelText.GetHeight())
 
         # --- OUTPUTS ---
         Window.ClearScreen()
