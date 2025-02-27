@@ -22,16 +22,20 @@ go towards the right, regardless if the right movement is held.
 One final note about the paddle: If the ball is coming in from the left side, and it hits exactly the left side
 of the paddle, it will bounce back along its path. Similarly, if the ball is coming in from the right side, and
 it hits the right side of the paddle, it will bounce along the path it took. Otherwise, the ball will bounce
-normally as expected. The reason this occurs is because this makes the game physics more interesting. and it
+normally as expected. The reason this occurs is because this makes the game physics more interesting, and it
 prevents the ball from getting "stuck" into paddle when it hits the paddle from the side. 
 
 ## Extra Features
 Here are the main extra features in this game:
-1. The bricks get harder to destroy as each level increases. This means that each brick has a health associated
-with them. Thus, it may take multiple hits from the ball to destroy one brick. As the level increases, bricks with more health
-will spawn. On level one, bricks either have a health of one or two. On level two, the bricks will have a health up to three.
-On level three, the bricks will have a health up to four. Afterwards, the brick's health will not increase as I think it makes
-the game feel too monotonous if it begins taking a long time to destroy bricks.
+1. Bricks have their own individual health. This means that it may take multiple hits from the
+ball to destroy certain bricks. As the level increases, the health of the brick increases. On
+Level 1, the bricks have a health of up to two. On Level 2, the maximum health of the bricks is
+three. On Level 3, the maximum health of the bricks is four. Afterwards, the bricks will continue
+to have a maximum health of four, even as the levels increase. 
+* White bricks' health is one, yellow bricks' health is two, orange bricks' health is three, and red
+bricks' health is four. The bricks will change color when they are hit and the bricks will be
+destroyed once they have been hit by the ball enough times.
+
 2. 
 
 ## Planning Components
@@ -41,3 +45,5 @@ Run the file _main.py_. A pygame window should appear and the player can begin t
 
 ## Reflection
 
+Include this: On level three, the bricks will have a health up to four. Afterwards, the brick's health will not increase as I think it makes
+the game feel too monotonous if it begins taking a long time to destroy bricks.

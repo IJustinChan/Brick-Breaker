@@ -22,6 +22,7 @@ class WINDOW:
         self.__Surface.fill((128, 128, 128))
         pygame.display.set_caption(self.__Title)
 
+    # --- Methods ---
     def ClearScreen(self):
         self.__Surface.fill((128, 128, 128))
 
@@ -29,6 +30,7 @@ class WINDOW:
         self.__Clock.tick(self.__FPS)
         pygame.display.flip()
 
+    # --- Accessors ---
     def GetSurface(self):
         return self.__Surface
 
@@ -147,7 +149,7 @@ class BallSprite(mySprite): # Inheritance is used here as the ball sprite is inh
         PositionY = POSITION[1] + (self.GetSpeed()*self.GetDirY())
         self.SetPosition(PositionX, PositionY)
 
-    # Another example of polymorphism here as the child's class method shares the same name as parent's method
+    # Polymorphism is used here as the child's class method shares the same name as parent's method
     # However, it checks boundaries in a different way due to how the ball differs from other sprites
     def CheckBoundaries(self, MAX_X, MAX_Y, MIN_X=0, MIN_Y=0): # Incomplete
         # mySprite.CheckBoundaries(self, MAX_X, MAX_Y, MIN_X=0, MIN_Y=0)
@@ -248,14 +250,15 @@ class PaddleSprite(mySprite):
             BALL.ChangeDirX(1)
 
 class Brick(mySprite):
-    def __init__(self, HEALTH, Width=1, Height=1, X=0, Y=0):
+    def __init__(self, HEALTH, Width=1, Height=1, X=0, Y=0, Type="Regular"):
         # Abstraction is utilized here where the Brick class only has attributes needed for this program
         # Important attributes of the brick include its health, width, legnth, x and y position,
         mySprite.__init__(self, Width, Height, x=X, y=Y)
         self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
         self._Surface.fill(self._Color)
         self.__Health = HEALTH
-
+        self.__Type = Type
+    
     # def __str__(self):
     #     return self.GetPosition()
     
@@ -275,6 +278,9 @@ class Brick(mySprite):
     # --- Accessors ---
     def GetHealth(self):
         return self.__Health
+    
+    def GetType(self):
+        return self.__Type
 
 class TextSprite(mySprite):
     def __init__(self, TEXT, F_FAMILY="Arial", F_SIZE=36, X=0, Y=0):
@@ -295,11 +301,34 @@ class UpperBlock(mySprite):
         self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
         self._Surface.fill(self._Color)
 
-class PowerUpSprite():
-    pass
+class PaddleLengthPowerUp(mySprite):
+    def __init__(self, Type, Width, Height, Speed):
+        mySprite.__init__(self, Width=Width, Height=Height, Speed=Speed)
+        self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
+        self._Surface.fill(self._Color)
+        self.__PowerUpType = Type
+    
+    # --- Methods ---
+    def UpdateColor(self, PowerUpType):
+        if PowerUpType == "Longer Paddle":
+            self.SetColor((40, 212, 86))
+        else:
+            self.SetColor((109, 33, 181))
+    
+    def SetPowerUpAtBrick(self, BRICK_POSITION, WIDTH, HEIGHT):
+        BrickX = BRICK_POSITION[0]
+        BrickY = BRICK_POSITION[1]
 
-class PowerUpBrickSprite():
-    pass
+        # Create the power-up at the center of the brick
+        CenterX = BrickX + (WIDTH/2) - self.GetWidth()/2
+        CenterY = BrickY + (HEIGHT/2) - self.GetHeight()/2
+        self.SetPosition(CenterX, CenterY)
+    
+    # --- Accessors ---
+    def GetPowerUpType(self):
+        return self.__PowerUpType
+    
+
 
 # --- INPUTS ---
 
@@ -315,18 +344,41 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCR
     MaxY = (NUM_ROWS - 1)*(PaddingY + HEIGHT) # Makes it 80 pixels above the screen
     for i in range(NUM_ROWS):
         for j in range(NUM_COLUMNS):
-            Health = random.randint(1, MaxHealth)
+            Health = random.randint(1, MaxHealth) # Generate random health of the brick
+
+            BrickType = "Regular"
+            if Health == 1:
+                if CalculatePowerUpChance() is True:
+                    BrickType = "PowerUp"
+
             XPOS = (PaddingX + WIDTH)*j + 60
             if INSIDE_SCREEN is True:
                 YPOS = (PaddingY + HEIGHT)*i + 80
             else:
                 YPOS = (PaddingY + HEIGHT)*i - MaxY #+ 100  #- 250 # + 80
             # Aggregation is implemented here as the brick objects are being placed into the same list
-            BricksArr.append(Brick(Health, WIDTH, HEIGHT, XPOS, YPOS))
-            BricksArr[-1].SetColor(COLORS[Health])
+            BricksArr.append(Brick(Health, WIDTH, HEIGHT, XPOS, YPOS, BrickType))
+
+            if BrickType == "Regular":
+                BricksArr[-1].SetColor(COLORS[Health])
+            else:
+                BricksArr[-1].SetColor((63, 181, 191))
 
     return BricksArr
 
+def CalculatePowerUpChance():
+    Chance = random.randint(1, 5)
+    if Chance <= 2:
+        return True
+    else:
+        return False
+
+def DecidePowerUpType():
+    LongerPaddleChance = random.randint(1, 4)
+    if LongerPaddleChance == 1:
+        return "Longer Paddle"
+    else:
+        return "Shorter Paddle"
 
 # --- OUTPUTS ---
 
@@ -370,16 +422,9 @@ if __name__ == "__main__":
     Paddle = PaddleSprite(100, 10)
     Paddle.SetPosition(Window.GetWidth()/2 - Paddle.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 30)
 
-    # BallYInitialPath = [1, -1]
     Ball = BallSprite(20, 20, 4.5)
     PaddleStartPos = Paddle.GetPosition()
     Ball.SetBallAtPaddle(PaddleStartPos, Paddle.GetWidth())
-
-    # Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight()/2 - Ball.GetHeight()/2 - 130) # Main
-    # Ball.SetPosition(Window.GetWidth()/2 - Ball.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 80)
-    # Ball.ChangeDirX(random.choice(BallYInitialPath))
-
-    SingleBrick = Brick(1, 65, 35, 250, 400)
 
     # --- Brick variables ---
     NumRows = 6
@@ -391,6 +436,9 @@ if __name__ == "__main__":
 
     # Aggregation is utilized here where we create a list that stores individual objects
     BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, True)
+
+    # List to store all the power up objects
+    PowerUpList = []
 
     StartGame = False # Game only starts once the player presses the space bar
     CanShootBall = True # Set it to True so player can shoot the ball at the beginning of the game
@@ -431,8 +479,6 @@ if __name__ == "__main__":
                     Ball.SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth())
                     CanShootBall = True
 
-            # Ball.isCollision(SingleBrick.GetWidth(), SingleBrick.GetHeight(), SdingleBrick.GetPosition(), None)
-
             if MoveBricksDown is True:
                 for brick in BricksList:
                     brick.MoveDown(brick.GetPosition(), 4)
@@ -445,6 +491,21 @@ if __name__ == "__main__":
                     brick.LoseHealth()
                     Score += 1
                     if brick.GetHealth() <= 0:
+                        if brick.GetType() == "PowerUp":
+                            # BrickPos = brick.GetPosition()
+
+                            if DecidePowerUpType() == "Longer Paddle":
+                                print("Longer Paddle")
+                                PowerUp = PaddleLengthPowerUp("Longer Paddle", 20, 20, 5)
+                                PowerUp.UpdateColor("Longer Paddle")
+                            else:
+                                print("Shorter Paddle")
+                                PowerUp = PaddleLengthPowerUp("Shorter Paddle", 20, 20, 5)
+                                PowerUp.UpdateColor("Shorter Paddle")
+                            
+                            PowerUp.SetPowerUpAtBrick(brick.GetPosition(), brick.GetWidth(), brick.GetHeight())
+                            PowerUpList.append(PowerUp)
+
                         BricksList.remove(brick)
                     else:
                         brick.SetColor(BrickColors[brick.GetHealth()])
@@ -496,10 +557,6 @@ if __name__ == "__main__":
                 while Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
                     Ball.Move(Ball.GetPosition())
 
-                # Ball.SetPosition(Ball.GetPosition()[0], Paddle.GetPosition()[1])
-                # Ball.ChangeDirX(Ball.GetDirX()*-1)
-
-
             ScoreText.UpdateText("Score: " + str(Score)) # Maybe an if-statement for this when the score actually changes
 
             LevelText.UpdateText("Level: " + str(Level)) # Put this after a level has been cleared
@@ -514,13 +571,15 @@ if __name__ == "__main__":
         if StartGame is False:
             Window.GetSurface().blit(StartText.GetSurface(), StartText.GetPosition())
 
+        if len(PowerUpList) > 0:
+            for powerup in PowerUpList:
+                Window.GetSurface().blit(powerup.GetSurface(), powerup.GetPosition())
+
         for brick in BricksList:
             Window.GetSurface().blit(brick.GetSurface(), brick.GetPosition())
 
         Window.GetSurface().blit(Paddle.GetSurface(), Paddle.GetPosition())
         Window.GetSurface().blit(Ball.GetSurface(), Ball.GetPosition())
-
-        # Window.GetSurface().blit(SingleBrick.GetSurface(), SingleBrick.GetPosition())
 
         Window.GetSurface().blit(TopBoundary.GetSurface(), TopBoundary.GetPosition())
 
