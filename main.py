@@ -6,6 +6,7 @@ date: 2025-02-06
 
 import pygame
 import random
+import time
 
 pygame.init()
 
@@ -186,7 +187,8 @@ class BallSprite(mySprite): # Inheritance is used here as the ball sprite is inh
         """
         # Polymorphism is utilized here as the child class modifies the parent's class method
         if mySprite.isCollision(self, Width, Height, Position) is True:
-            BallPosition = Ball.GetPosition()
+            # BallPosition = Ball.GetPosition()
+            BallPosition = self.GetPosition()
             BallX = BallPosition[0]
             BallY = BallPosition[1]
 
@@ -223,12 +225,14 @@ class BallSprite(mySprite): # Inheritance is used here as the ball sprite is inh
                     # Check the minimum distance value to determine which direction needs to be reversed
                     if MinDistance == LeftSideDistance or MinDistance == RightSideDistance: # The ball hit the left or right edge so x-direction needs to be reversed
                         if XDirChanged is False:
-                            Ball.ChangeDirX(Ball.GetDirX()*-1)
+                            # Ball.ChangeDirX(Ball.GetDirX()*-1)
+                            self.ChangeDirX(self.GetDirX()*-1)
                             XDirChanged = True
                     # Use another if-statement just in case the Ball's vertex collided with the Brick's vertex
                     if MinDistance == TopSideDistance or MinDistance == BottomSideDistance: # The ball hit the top or bottom side so reverse the y-direction
                         if YDirChanged is False:
-                            Ball.ChangeDirY(Ball.GetDirY()*-1)
+                            # Ball.ChangeDirY(Ball.GetDirY()*-1)
+                            self.ChangeDirY(self.GetDirY()*-1)
                             YDirChanged = True
 
             return True
@@ -238,7 +242,8 @@ class BallSprite(mySprite): # Inheritance is used here as the ball sprite is inh
         PaddleX = PADDLE_POS[0]
         PaddleY = PADDLE_POS[1]
 
-        Ball.SetPosition(PaddleX + (WIDTH/2) - Ball.GetWidth()/2, PaddleY - Ball.GetHeight() - 5)
+        # Ball.SetPosition(PaddleX + (WIDTH/2) - Ball.GetWidth()/2, PaddleY - Ball.GetHeight() - 5)
+        self.SetPosition(PaddleX + (WIDTH/2) - self.GetWidth()/2, PaddleY - self.GetHeight() - 5)
 
 class PaddleSprite(mySprite):
     def __init__(self, Width=1, Height=1):
@@ -407,7 +412,9 @@ def DecidePowerUpType():
 # --- OUTPUTS ---
 
 
-if __name__ == "__main__":
+
+# --- Main program code ---
+def Main():
     Window = WINDOW("Brick Breaker", 475, 630, 60)
 
     # --- Colors ---
@@ -432,6 +439,7 @@ if __name__ == "__main__":
     Score = 0
     Level = 1
     Lives = 3
+    GameOngoing = True # Variable to keep track if the player still has lives left
 
     # --- Text Sprites ---
     TitleText = TextSprite("BRICK BREAKER!", "Comic sans", 25)
@@ -448,6 +456,21 @@ if __name__ == "__main__":
 
     LivesText = TextSprite("Lives: " + str(Lives), "Comic sans", 18)
     LivesText.SetPosition(Window.GetWidth() - LivesText.GetWidth() - 10, LevelText.GetHeight())
+
+    GameOverText = TextSprite("Game Over!", "Comic sans", 40)
+    GameOverText.SetPosition(-100, -100) # Set this sprite off screen
+    GameOverText.SetColor((0, 0, 0))
+    GameOverText.UpdateText("Game Over!") # This function applies the text color to the text
+
+    ScoreMessageText = TextSprite("Your final score is " + str(Score), "Comic sans", 25)
+    ScoreMessageText.SetPosition(-150, -150) # Set this sprite off screen
+    ScoreMessageText.SetColor((0, 0, 0))
+    ScoreMessageText.UpdateText("Your final score is " + str(Score))
+
+    RestartText = TextSprite("Click pygame's exit button to quit. Or, wait 5 seconds the restart", "Comic sans", 15)
+    RestartText.SetPosition(-40, -40) # Make this sprite go off screen
+    RestartText.SetColor((0, 0, 0))
+    RestartText.UpdateText("Click pygame's exit button to quit. Or, wait 5 seconds the restart")
 
     # --- Other Sprites ---
     TopBoundary = UpperBlock(Window.GetWidth(), 50)
@@ -508,8 +531,9 @@ if __name__ == "__main__":
             if Ball.HitBottomEdge(Window.GetHeight()) is True:
                 Lives -= 1
                 if Lives <= 0:
-                    exit() # Stop the program for now
-                    pass # End the game
+                    GameOngoing = False
+                    # exit() # Stop the program for now
+                    # pass # End the game
                 else:
                     Ball.SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth())
                     CanShootBall = True
@@ -527,13 +551,12 @@ if __name__ == "__main__":
                     Score += 1
                     if brick.GetHealth() <= 0:
                         if brick.GetType() == "PowerUp":
-                            # BrickPos = brick.GetPosition()
 
                             if DecidePowerUpType() == "Longer Paddle":
                                 PowerUp = PaddleLengthPowerUp("Longer Paddle", 20, 20, 4)
                                 PowerUp.UpdateColor("Longer Paddle")
                             else:
-                                PowerUp = PaddleLengthPowerUp("Shorter Paddle", 100, 20, 4)
+                                PowerUp = PaddleLengthPowerUp("Shorter Paddle", 110, 20, 4)
                                 PowerUp.UpdateColor("Shorter Paddle")
                             
                             PowerUp.SetPowerUpAtBrick(brick.GetPosition(), brick.GetWidth(), brick.GetHeight())
@@ -549,24 +572,9 @@ if __name__ == "__main__":
                     if powerup.CheckBoundaries(Window.GetHeight()) is True:
                         PowerUpList.remove(powerup)
             
-
-            # CollisionBricks = []
-            # for brick in BricksList[:]:
-            #     if Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition()) is True:
-            #         CollisionBricks.append(brick)
-            #         BricksList.remove(brick)
-            #
-            # for brick in CollisionBricks
-
-                    # brick.LoseHealth()
-                    # Score += 1
-                    # if brick.GetHealth() <= 0:
-                    #     BricksList.remove(brick)
-                    # else:
-                    #     brick.SetColor(BrickColors[brick.GetHealth()])
-            
             if len(BricksList) == 0:
                 Level += 1
+                Ball.SetSpeed(Ball.GetSpeed() + 0.2)
                 BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, False)
                 MoveBricksDown = True
                 Counter = (NumRows - 1)*(10 + BrickHeight) + 80
@@ -610,10 +618,7 @@ if __name__ == "__main__":
                             Paddle.ChangePaddleWidth(NewPaddleWidth)
                         else:
                             Score += 5
-
                         PowerUpList.remove(powerup)
-
-
                     else: # Make the paddle shorter
                         if PaddleWidthState - 1 >= -2:
                             PaddleWidthState -= 1
@@ -625,6 +630,8 @@ if __name__ == "__main__":
 
                         PowerUpList.remove(powerup)
 
+
+            # --- Update text sprites here ---
             ScoreText.UpdateText("Score: " + str(Score)) # Maybe an if-statement for this when the score actually changes
 
             LevelText.UpdateText("Level: " + str(Level)) # Put this after a level has been cleared
@@ -632,6 +639,8 @@ if __name__ == "__main__":
 
             LivesText.UpdateText("Lives: " + str(Lives))
             LivesText.SetPosition(Window.GetWidth() - LivesText.GetWidth() - 10, LevelText.GetHeight())
+
+            ScoreMessageText.UpdateText("Your final score is " + str(Score)) # Update this text so it is ready to be displayed when the game ends
 
         # --- OUTPUTS ---
         Window.ClearScreen()
@@ -655,7 +664,33 @@ if __name__ == "__main__":
         Window.GetSurface().blit(ScoreText.GetSurface(), ScoreText.GetPosition())
         Window.GetSurface().blit(LevelText.GetSurface(), LevelText.GetPosition())
         Window.GetSurface().blit(LivesText.GetSurface(), LivesText.GetPosition())
+
+        # Make this if-statement at the end so the game over texts can be placed on top of everything
+        if GameOngoing is False: # The player has ran out of lives
+            # Display the game over text sprites
+            GameOverText.SetPosition(Window.GetWidth()/2 - GameOverText.GetWidth()/2, Window.GetHeight()/2 - GameOverText.GetHeight()/2 - 50)
+            ScoreMessageText.SetPosition(Window.GetWidth()/2 - ScoreMessageText.GetWidth()/2, Window.GetHeight()/2 - ScoreMessageText.GetHeight()/2)
+            RestartText.SetPosition(Window.GetWidth()/2 - RestartText.GetWidth()/2, Window.GetHeight()/2 - RestartText.GetHeight()/2 + 50)
+
+            Window.GetSurface().blit(GameOverText.GetSurface(), GameOverText.GetPosition())
+            Window.GetSurface().blit(ScoreMessageText.GetSurface(), ScoreMessageText.GetPosition())
+            Window.GetSurface().blit(RestartText.GetSurface(), RestartText.GetPosition())
+
+            Window.UpdateFrame() # Show the messages above
+
+            # This allows the user to close the pygame window during the five second wait time
+            StartTime = time.time()
+            while time.time() - StartTime < 5:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        exit()
+
+            break # This ends the main loop
+
         Window.UpdateFrame()
+    
+    Main() # Use recursion to restart the Main() function which restarts the whole game
 
-
+if __name__ == "__main__":
+    Main() # Run the function where the main program code is held in
 
