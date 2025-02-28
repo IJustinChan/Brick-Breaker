@@ -115,6 +115,11 @@ class mySprite:
 
     def ChangeDirY(self, NEW_VAL):
         self.__DirY = NEW_VAL
+    
+    def MoveDown(self, POSITION, SPEED):
+        PositionX = POSITION[0]
+        PositionY = POSITION[1] + SPEED
+        self.SetPosition(PositionX, PositionY)
 
     # --- Accessor Methods ---
     def GetPosition(self):
@@ -241,6 +246,12 @@ class PaddleSprite(mySprite):
         self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
         self._Surface.fill(self._Color)
 
+        # Variable to track of the paddle's current state (longer/shorter) after taking power ups
+        # Zero means normal width, -1 means shorten one time, -2 means shorten twice, 1 means width increased once, and 2 means width increased twice
+        # Player will lose health if they hit a power down and Paddle's state is -2
+        self.__WidthState = 0
+
+    # --- Methods ---
     def LaunchBall(self, PRESSED_KEYS, BALL):
         if PRESSED_KEYS[pygame.K_d] == 1 or PRESSED_KEYS[pygame.K_RIGHT] == 1:
             BALL.ChangeDirX(1)
@@ -248,6 +259,16 @@ class PaddleSprite(mySprite):
             BALL.ChangeDirX(-1)
         else:
             BALL.ChangeDirX(1)
+    
+    def ChangePaddleWidth(self, NEW_WIDTH):
+        self._Surface = pygame.transform.scale(self._Surface, (NEW_WIDTH, self.GetHeight()))
+
+    def UpdateWidthState(self, NEW_VAL):
+        self.__WidthState = NEW_VAL
+    
+    # --- Accessors ---
+    def GetWidthState(self):
+        return self.__WidthState
 
 class Brick(mySprite):
     def __init__(self, HEALTH, Width=1, Height=1, X=0, Y=0, Type="Regular"):
@@ -269,11 +290,6 @@ class Brick(mySprite):
 
     def LoseHealth(self):
         self.__Health -= 1
-    
-    def MoveDown(self, POSITION, SPEED):
-        PositionX = POSITION[0]
-        PositionY = POSITION[1] + SPEED
-        self.SetPosition(PositionX, PositionY)
 
     # --- Accessors ---
     def GetHealth(self):
@@ -324,6 +340,14 @@ class PaddleLengthPowerUp(mySprite):
         CenterY = BrickY + (HEIGHT/2) - self.GetHeight()/2
         self.SetPosition(CenterX, CenterY)
     
+    def CheckBoundaries(self, MAX_Y):
+        Position = self.GetPosition()
+        PowerUpY = Position[1]
+        if PowerUpY > MAX_Y:
+            return True
+        else:
+            return False
+    
     # --- Accessors ---
     def GetPowerUpType(self):
         return self.__PowerUpType
@@ -368,7 +392,7 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCR
 
 def CalculatePowerUpChance():
     Chance = random.randint(1, 5)
-    if Chance <= 2:
+    if Chance <= 3:
         return True
     else:
         return False
@@ -392,6 +416,16 @@ if __name__ == "__main__":
         2: (255, 255, 102),
         3: (255, 153, 51),
         4: (204, 0, 0)
+    }
+
+    # Possible Paddle widths depending on how much times they hit a power up
+    # --- Paddle widths ---
+    PaddleWidths = {
+        0: 100, # When no power up is applied, its original width is 100
+        -1: 60, # Hit a power up that decreases its width for the first time
+        -2: 25, # Hit a power up that decreases its width for the second time
+        1 : 125, # Power up increases its width first time
+        2: 150 # Power up increases its width for the second time
     }
 
     # --- Variables ---
@@ -467,7 +501,8 @@ if __name__ == "__main__":
                     CanShootBall = False
             else:
                 Ball.Move(Ball.GetPosition())
-            # Ball.WASDmove(PRESSED_KEYS)
+                #Ball.WASDmove(PRESSED_KEYS)
+
             Ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
 
             if Ball.HitBottomEdge(Window.GetHeight()) is True:
@@ -495,12 +530,10 @@ if __name__ == "__main__":
                             # BrickPos = brick.GetPosition()
 
                             if DecidePowerUpType() == "Longer Paddle":
-                                print("Longer Paddle")
-                                PowerUp = PaddleLengthPowerUp("Longer Paddle", 20, 20, 5)
+                                PowerUp = PaddleLengthPowerUp("Longer Paddle", 20, 20, 4)
                                 PowerUp.UpdateColor("Longer Paddle")
                             else:
-                                print("Shorter Paddle")
-                                PowerUp = PaddleLengthPowerUp("Shorter Paddle", 20, 20, 5)
+                                PowerUp = PaddleLengthPowerUp("Shorter Paddle", 100, 20, 4)
                                 PowerUp.UpdateColor("Shorter Paddle")
                             
                             PowerUp.SetPowerUpAtBrick(brick.GetPosition(), brick.GetWidth(), brick.GetHeight())
@@ -509,6 +542,13 @@ if __name__ == "__main__":
                         BricksList.remove(brick)
                     else:
                         brick.SetColor(BrickColors[brick.GetHealth()])
+            
+            if len(PowerUpList) > 0:
+                for powerup in PowerUpList:
+                    powerup.MoveDown(powerup.GetPosition(), powerup.GetSpeed())
+                    if powerup.CheckBoundaries(Window.GetHeight()) is True:
+                        PowerUpList.remove(powerup)
+            
 
             # CollisionBricks = []
             # for brick in BricksList[:]:
@@ -556,6 +596,34 @@ if __name__ == "__main__":
 
                 while Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
                     Ball.Move(Ball.GetPosition())
+            
+            for powerup in PowerUpList:
+                if Paddle.isCollision(powerup.GetWidth(), powerup.GetHeight(), powerup.GetPosition()):
+                    PaddleWidthState = Paddle.GetWidthState()
+
+                    if powerup.GetPowerUpType() == "Longer Paddle":
+                        if PaddleWidthState + 1 <= 2: # Only make the paddle longer if it hasn't reached its maximum length yet
+
+                            PaddleWidthState += 1
+                            Paddle.UpdateWidthState(PaddleWidthState)
+                            NewPaddleWidth = PaddleWidths[PaddleWidthState] # Get the new longer width the paddle should change into
+                            Paddle.ChangePaddleWidth(NewPaddleWidth)
+                        else:
+                            Score += 5
+
+                        PowerUpList.remove(powerup)
+
+
+                    else: # Make the paddle shorter
+                        if PaddleWidthState - 1 >= -2:
+                            PaddleWidthState -= 1
+                            Paddle.UpdateWidthState(PaddleWidthState)
+                            NewPaddleWidth = PaddleWidths[PaddleWidthState] # Get the new shorter width the paddle should change to
+                            Paddle.ChangePaddleWidth(NewPaddleWidth)
+                        else:
+                            Score -= 20
+
+                        PowerUpList.remove(powerup)
 
             ScoreText.UpdateText("Score: " + str(Score)) # Maybe an if-statement for this when the score actually changes
 
