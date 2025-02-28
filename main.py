@@ -51,12 +51,13 @@ class mySprite:
         self.__x = x
         self.__y = y
         self.__Position = (self.__x, self.__y)
-        self._Color = Color
+        self._Color = Color 
         self.__Speed = Speed
         self._Surface = pygame.Surface
         self.__DirX = 1
         self.__DirY = 1
 
+    # --- Methods ---
     def SetX(self, x):
         self.__x = x
         self.__Position = (self.__x, self.__y)
@@ -83,16 +84,16 @@ class mySprite:
             self.__x -= self.__Speed
         self.SetPosition(self.__x, self.__y)
 
-    def WASDmove(self, PRESSED_KEYS):
-        if PRESSED_KEYS[pygame.K_d] == 1:
-            self.__x += self.__Speed
-        if PRESSED_KEYS[pygame.K_a] == 1:
-            self.__x -= self.__Speed
-        if PRESSED_KEYS[pygame.K_w] == 1:
-            self.__y -= self.__Speed
-        if PRESSED_KEYS[pygame.K_s] == 1:
-            self.__y += self.__Speed
-        self.SetPosition(self.__x, self.__y)
+    # def WASDmove(self, PRESSED_KEYS):
+    #     if PRESSED_KEYS[pygame.K_d] == 1:
+    #         self.__x += self.__Speed
+    #     if PRESSED_KEYS[pygame.K_a] == 1:
+    #         self.__x -= self.__Speed
+    #     if PRESSED_KEYS[pygame.K_w] == 1:
+    #         self.__y -= self.__Speed
+    #     if PRESSED_KEYS[pygame.K_s] == 1:
+    #         self.__y += self.__Speed
+    #     self.SetPosition(self.__x, self.__y)
 
     def CheckBoundaries(self, MAX_X, MAX_Y, MIN_X=0, MIN_Y=0):
         if self.__x > MAX_X - self.GetWidth():
@@ -157,8 +158,7 @@ class BallSprite(mySprite): # Inheritance is used here as the ball sprite is inh
 
     # Polymorphism is used here as the child's class method shares the same name as parent's method
     # However, it checks boundaries in a different way due to how the ball differs from other sprites
-    def CheckBoundaries(self, MAX_X, MAX_Y, MIN_X=0, MIN_Y=0): # Incomplete
-        # mySprite.CheckBoundaries(self, MAX_X, MAX_Y, MIN_X=0, MIN_Y=0)
+    def CheckBoundaries(self, MAX_X, MAX_Y, MIN_X=0, MIN_Y=0):
         POSITION = self.GetPosition()
         if POSITION[0] + self.GetWidth() > MAX_X:
             self.ChangeDirX(-1)
@@ -166,8 +166,6 @@ class BallSprite(mySprite): # Inheritance is used here as the ball sprite is inh
             self.ChangeDirX(1)
         elif POSITION[1] < MIN_Y:
             self.ChangeDirY(1)
-        # elif POSITION[1] + self.GetHeight() > MAX_Y: # Player lose so change this
-        #     self.ChangeDirY(-1)
 
     def HitBottomEdge(self, MAX_Y):
         Position = self.GetPosition()
@@ -583,13 +581,9 @@ def Main():
                 # Ball.ChangeDirY(Ball.GetDirY()*-1)
                 BallPosition = Ball.GetPosition()
                 BallX = BallPosition[0]
-                BallY = BallPosition[1]
                 
                 PaddlePosition = Paddle.GetPosition()
                 PaddleX = PaddlePosition[0]
-                PaddleY = PaddlePosition[1]
-
-                # --- Maybe put this inside a function ---
 
                 if BallX >= PaddleX and BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth():
                     Ball.ChangeDirY(Ball.GetDirY()*-1)
