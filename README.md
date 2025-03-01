@@ -108,7 +108,7 @@ inside a function called Main(). The while-loop inside Main() is stopped after t
 seconds, and this function then calls itself, which resets everything. While this solution works, I probably
 should have created a class called "Game" that controls everything, including the other classes and objects. This
 would make it easier to reset the game and it makes all the other classes and objects easier to control. It also 
-leadd to the code being more organized.
+leads to the code being more organized.
 
 
 
