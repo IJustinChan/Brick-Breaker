@@ -65,50 +65,52 @@ ball will also speed up as the level increases.
 
 
 ## Planning Components
+UML Tables:
+![UML Tables](Images/Brick%20Breaker%20UML%20Tables.drawio.png)
 
+Flowchart:
+![Flowchart](Images/Brick%20Breaker%20Flowchart.drawio.png)
 
 ## How To Run The Program
-Run the file _main.py_. A pygame window should appear and the player can press the space bar to
-begin playing the game.
+Ensure that pygame is installed. Then, run the file _main.py_. A pygame window should appear and the player 
+can press the space bar to begin playing the game.
 
 ## Reflection
 
 When I started creating the program, I knew that most of my classes would inherit their properties
 from a central parent class, which was the mySprite class. As a result, I created several attributes and
 methods that I knew the other classes in my game will need such as speed, color, movement, etc. This made
-it very easy to create each object as I didn't have to create many new methhods or add new attributes, which
+it very easy to create each object as I didn't have to create much new methhods or attributes, which
 saved a lot of time and reduced the amount of code I needed to write. This showed me how useful and powerful
 inheritance really is.
 
 One of the biggest challenges I encountered was handling the collision between the ball and the paddle.
-When I initially created the collision between ball and paddle, it worked fine until the ball hits the
-left and right edge of the paddle. This resulted in numerous bugs such as the ball getting stuck inside
+Initially, the collision I made for the ball and paddle worked fine until the ball hits the left and
+right edge of the paddle. This resulted in numerous bugs such as the ball getting stuck inside
 the paddle, preventing the ball from bouncing away. I first tried to fix this issue by using a while-loop 
 to make the ball move away from the paddle before the game continues, but this resulted in the ball temporarily 
-speeding up, which made the collision look weird and unnatural. To solve this problem, I had to make the ball 
+speeding up, making the collision look weird and unnatural. To solve this problem, I had to make the ball 
 directly bounce along the path it came from. This led to the new game physics where if the paddle hits the ball 
 using its left or right sides, the ball bounces away following the path it came from. Creating this new
-collision physics solved the problem of the ball getting stuck into the paddle when it hits the side.
+collision physics solved the problem of the ball getting stuck into the paddle when it hits the sides.
 At the same time, it makes the game more dynamic as the player will have more control of where the ball
 bounces, so I was able to indirectly improve the game in two ways using this solution.
 
-One of my extra feature was making the bricks have different health so that way the ball needs to hit some bricks 
-more times than others to destroy them. I decided to make the bricks have a health of up to four, which occurs
-on Level 3. After Level 3, the bricks' health will stop increasing as I realize the more health the bricks have,
-the more monotonous the game will begin to feel since it will take too long to destroy the bricks. Thus, I decided
-a maximum brick health of four is reasonable. Additionally, I also made it so the bricks will have a certain color
-depending on their health. This allows the user to know how many times to they have to hit a certain brick to destroy
-it. I also chose intuitive colors for the bricks such as red, orange, yellow and white so the user can quickly
-figure out which bricks have more health.
+One of my extra feature was making the bricks have different health, requiring the ball to hit some bricks
+multiple times to destroy them. I decided to make the bricks have a health of up to four, which occurs
+on Level 3. After Level 3, the bricks' health will stop increasing as I realize that the game will begin feeling
+monotonous if it takes a long to destroy the bricks. Thus, I decided a maximum brick health of four is reasonable. 
+Additionally, I also made it so the bricks will have a certain color depending on their health. This allows the 
+user to know how many times they have to hit a certain brick to destroy it. I also chose intuitive colors for the 
+bricks such as red, orange, yellow and white so the user can quickly figure out which bricks have more health.
 
 A small feature I have in my program is allowing the user to wait five seconds to restart the game after
 they lose all three of their lives. I originally had difficulties making this feature as I would have to
 reset several variables and objects. However, I found a solution involving recursion, where I placed all of my code
 inside a function called Main(). The while-loop inside Main() is stopped after the user finishes waiting five
 seconds, and this function then calls itself, which resets everything. While this solution works, I probably
-should have created a class called "Game" that controls everything, including the other classes and objects. This
-would make it easier to reset the game and it makes all the other classes and objects easier to control. It also 
-leads to the code being more organized.
+should have created a class called "Game" that controls everything. This would make it easier to reset the game 
+and it makes all the other classes and objects easier to control. It also makes the code more organized.
 
 
 
