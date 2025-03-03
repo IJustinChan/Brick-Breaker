@@ -66,9 +66,11 @@ ball will also speed up as the level increases.
 
 ## Planning Components
 UML Tables:
+
 ![UML Tables](Images/Brick%20Breaker%20UML%20Tables.drawio.png)
 
 Flowchart:
+
 ![Flowchart](Images/Brick%20Breaker%20Flowchart.drawio.png)
 
 ## How To Run The Program
