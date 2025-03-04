@@ -79,13 +79,6 @@ can press the space bar to begin playing the game.
 
 ## Reflection
 
-When I started creating the program, I knew that most of my classes would inherit their properties
-from a central parent class, which was the mySprite class. As a result, I created several attributes and
-methods that I knew the other classes in my game will need such as speed, color, movement, etc. This made
-it very easy to create each object as I didn't have to create much new methhods or attributes, which
-saved a lot of time and reduced the amount of code I needed to write. This showed me how useful and powerful
-inheritance really is.
-
 One of the biggest challenges I encountered was handling the collision between the ball and the paddle.
 Initially, the collision I made for the ball and paddle worked fine until the ball hits the left and
 right edge of the paddle. This resulted in numerous bugs such as the ball getting stuck inside
@@ -105,6 +98,8 @@ monotonous if it takes a long to destroy the bricks. Thus, I decided a maximum b
 Additionally, I also made it so the bricks will have a certain color depending on their health. This allows the 
 user to know how many times they have to hit a certain brick to destroy it. I also chose intuitive colors for the 
 bricks such as red, orange, yellow and white so the user can quickly figure out which bricks have more health.
+This decision taught me the importance of taking the perspective of the user when designing my program
+as I want my game to be as intuitive to understand as possible.
 
 A small feature I have in my program is allowing the user to wait five seconds to restart the game after
 they lose all three of their lives. I originally had difficulties making this feature as I would have to
@@ -113,6 +108,8 @@ inside a function called Main(). The while-loop inside Main() is stopped after t
 seconds, and this function then calls itself, which resets everything. While this solution works, I probably
 should have created a class called "Game" that controls everything. This would make it easier to reset the game 
 and it makes all the other classes and objects easier to control. It also makes the code more organized.
+In the future, I will try planning more aspects of my code out at the beginning to prevent my code from
+being more complicated later on.
 
 
 

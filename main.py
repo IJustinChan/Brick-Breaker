@@ -14,6 +14,7 @@ pygame.init()
 class WINDOW:
     def __init__(self, TITLE, WIDTH, HEIGHT, FPS):
         # Encapsulation is utilized here to protect the WINDOW class's attributes
+        # This prevents the other classes from directly accessing WINDOW's attributes
         self.__Title = TITLE
         self.__FPS = FPS
         self.__Width = WIDTH
@@ -348,6 +349,7 @@ class PaddleLengthPowerUp(mySprite): # Power up / power down sprite class
         mySprite.__init__(self, Width=Width, Height=Height, Speed=Speed)
         self._Surface = pygame.Surface(self._Dimensions, pygame.SRCALPHA, 32)
         self._Surface.fill(self._Color)
+        # Abstraction is used here as the type of power up is the only additional information this program needs
         self.__PowerUpType = Type # Store what the power up does
     
     # --- Methods ---
@@ -554,7 +556,7 @@ def Main():
     # Aggregation is utilized here where we create a list that stores individual objects
     BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, True)
 
-    # List to store all the power up objects
+    # List to store all the power up objects, which also uses aggregation
     PowerUpList = []
 
     StartGame = False # Game only starts once the player presses the space bar
@@ -749,7 +751,7 @@ def Main():
 
         Window.UpdateFrame()
     
-    Main() # Use recursion to restart the Main() function which restarts the whole game
+    Main() # Use recursion to call the Main() function which restarts the whole game
 
 if __name__ == "__main__":
     Main() # Run the function where the main program code is held in
