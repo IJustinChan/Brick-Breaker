@@ -67,11 +67,11 @@ ball will also speed up as the level increases.
 ## Planning Components
 UML Tables:
 
-![UML Tables](Images/Brick%20Breaker%20UML%20Tables.drawio.png)
+![UML Tables](Images/Brick%20Breaker%20-%20UML%20Tables.drawio.png)
 
 Flowchart:
 
-![Flowchart](Images/Brick%20Breaker%20Flowchart.drawio.png)
+![Flowchart](Images/Brick%20Breaker%20-%20Flowchart.drawio.png)
 
 ## How To Run The Program
 Ensure that pygame is installed. Then, run the file _main.py_. A pygame window should appear and the player 
