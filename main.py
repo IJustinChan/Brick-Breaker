@@ -388,7 +388,6 @@ class PaddleLengthPowerUp(mySprite): # Power up / power down sprite class
         return self.__PowerUpType
     
 
-
 # --- INPUTS ---
 # Users give their input through pygame and not the console so there are no inputs
 
