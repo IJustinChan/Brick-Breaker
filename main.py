@@ -424,8 +424,11 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCR
             Health = random.randint(1, MaxHealth) # Generate random health of the brick
 
             BrickType = "Regular" # Assume the brick does not give power ups
-            if Health == 1: # Only bricks with a health of one can give power ups
-                if CalculatePowerUpChance() is True: # Determine if the brick with one health can be a power up brick
+            if Health == 1: # Only bricks with a health of one can give power ups or multiball bricks
+                MultiballChance = random.randint(1, 5) # 20% chance for a brown multiball brick
+                if MultiballChance == 1:
+                    BrickType = "MultiBall"
+                elif CalculatePowerUpChance() is True: # Determine if the brick with one health can be a power up brick
                     BrickType = "PowerUp"
 
             XPOS = (PaddingX + WIDTH)*j + 60 # Determine the x-position using its column number, x-padding, and width. Translate it 60 pixels to the right
@@ -443,10 +446,25 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCR
 
             if BrickType == "Regular": # Change the color of the brick depending on its health if it is a regular brick
                 BricksArr[-1].SetColor(COLORS[Health])
-            else: # Give power up bricks a special color
+            elif BrickType == "PowerUp": # Give power up bricks a special color
                 BricksArr[-1].SetColor((63, 181, 191))
+            else: # Multi-ball bricks are brown
+                BricksArr[-1].SetColor((150, 75, 0))
 
     return BricksArr
+
+def SpawnNewBall(BALL):
+    """
+    Create a new ball when a brown multiball brick is destroyed.
+    The new ball is created at the same position as the current ball and travels in the opposite x direction.
+    :param BALL: obj
+    :return: obj
+    """
+    NewBall = BallSprite(BALL.GetWidth(), BALL.GetHeight(), BALL.GetSpeed())
+    NewBall.SetPosition(*BALL.GetPosition())
+    NewBall.ChangeDirX(-BALL.GetDirX())
+    NewBall.ChangeDirY(BALL.GetDirY())
+    return NewBall
 
 def CalculatePowerUpChance():
     """
@@ -543,6 +561,7 @@ def Main():
     Ball = BallSprite(20, 20, 4.5)
     PaddleStartPos = Paddle.GetPosition()
     Ball.SetBallAtPaddle(PaddleStartPos, Paddle.GetWidth()) # Place the ball at the center of the paddle
+    BallsList = [Ball] # Track all active balls
 
     # --- Brick variables ---
     NumRows = 6
@@ -579,14 +598,16 @@ def Main():
             Paddle.CheckBoundaries(Window.GetWidth(), Window.GetHeight())
 
             if CanShootBall is True: # Check if the ball needs to be launched at the paddle
-                Ball.SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth())
+                BallsList[0].SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth())
                 if PRESSED_KEYS[pygame.K_UP] == 1 or PRESSED_KEYS[pygame.K_w] == 1: # Ball will be launched when up arrow key or "W" is pressed
-                    Paddle.LaunchBall(PRESSED_KEYS, Ball)
+                    Paddle.LaunchBall(PRESSED_KEYS, BallsList[0])
                     CanShootBall = False # Set it to False so player can no longer shoot the ball after it is launched
-            else: # Move the ball after it has been launched
-                Ball.Move(Ball.GetPosition())
+            else: # Move the balls after they have been launched
+                for ball in BallsList:
+                    ball.Move(ball.GetPosition())
 
-            Ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
+            for ball in BallsList:
+                ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
 
             if MoveBricksDown is True: # Check if the brick needs to be move down if it has not reached final position
                 for brick in BricksList: # Move each brick down
@@ -595,27 +616,29 @@ def Main():
                 if Counter <= 0: # Brick has reached their final positions
                     MoveBricksDown = False
 
-            for brick in BricksList:
-                if Ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition()) is True:
-                    brick.LoseHealth() # Make the brick lose health after the ball hits it
-                    Score += 1
-                    if brick.GetHealth() <= 0: # Brick has been destroyed
-                        if brick.GetType() == "PowerUp": # Check if the brick gives power ups
-                            
-                            # Decide what type of power up to give
-                            if DecidePowerUpType() == "Longer Paddle":
-                                PowerUp = PaddleLengthPowerUp("Longer Paddle", 20, 20, 4) # The power up increases paddle's length
-                                PowerUp.UpdateColor("Longer Paddle") # Change color to green
-                            else:
-                                PowerUp = PaddleLengthPowerUp("Shorter Paddle", 110, 20, 4)
-                                PowerUp.UpdateColor("Shorter Paddle") # Change color to purple
-                            
-                            PowerUp.SetPowerUpAtBrick(brick.GetPosition(), brick.GetWidth(), brick.GetHeight()) # Create power up at where the brick was destroyed
-                            PowerUpList.append(PowerUp)
+            for ball in list(BallsList):
+                for brick in list(BricksList):
+                    if ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition()) is True:
+                        brick.LoseHealth() # Make the brick lose health after the ball hits it
+                        Score += 1
+                        if brick.GetHealth() <= 0: # Brick has been destroyed
+                            if brick.GetType() == "PowerUp": # Check if the brick gives power ups
+                                # Decide what type of power up to give
+                                if DecidePowerUpType() == "Longer Paddle":
+                                    PowerUp = PaddleLengthPowerUp("Longer Paddle", 20, 20, 4) # The power up increases paddle's length
+                                    PowerUp.UpdateColor("Longer Paddle") # Change color to green
+                                else:
+                                    PowerUp = PaddleLengthPowerUp("Shorter Paddle", 110, 20, 4)
+                                    PowerUp.UpdateColor("Shorter Paddle") # Change color to purple
+                                PowerUp.SetPowerUpAtBrick(brick.GetPosition(), brick.GetWidth(), brick.GetHeight()) # Create power up at where the brick was destroyed
+                                PowerUpList.append(PowerUp)
+                            elif brick.GetType() == "MultiBall":
+                                BallsList.append(SpawnNewBall(ball)) # Create another ball when brown brick is destroyed
 
-                        BricksList.remove(brick) # Remove the brick from the list to indicate it is gone from the game
-                    else:
-                        brick.SetColor(BrickColors[brick.GetHealth()]) # Change brick's color if it has still has health left
+                            BricksList.remove(brick) # Remove the brick from the list to indicate it is gone from the game
+                            break
+                        else:
+                            brick.SetColor(BrickColors[brick.GetHealth()]) # Change brick's color if it has still has health left
             
             if len(PowerUpList) > 0:
                 for powerup in PowerUpList: # Move each power ups down
@@ -625,37 +648,39 @@ def Main():
             
             if len(BricksList) == 0: # All the bricks in the level has been destroyed
                 Level += 1
-                Ball.SetSpeed(Ball.GetSpeed() + 0.2) # Speed up the ball
+                for ball in BallsList:
+                    ball.SetSpeed(ball.GetSpeed() + 0.2) # Speed up every active ball
                 BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, False) # Create new bricks outside the screen
                 MoveBricksDown = True
                 Counter = (NumRows - 1)*(10 + BrickHeight) + 80 # Calculate how much the bricks need to move down by
 
-            if Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()): # Check if paddle and ball collided
-                BallPosition = Ball.GetPosition()
-                BallX = BallPosition[0]
-                
-                PaddlePosition = Paddle.GetPosition()
-                PaddleX = PaddlePosition[0]
+            for ball in list(BallsList):
+                if Paddle.isCollision(ball.GetWidth(), ball.GetHeight(), ball.GetPosition()): # Check if paddle and ball collided
+                    BallPosition = ball.GetPosition()
+                    BallX = BallPosition[0]
+                    
+                    PaddlePosition = Paddle.GetPosition()
+                    PaddleX = PaddlePosition[0]
 
-                if BallX >= PaddleX and BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth(): # Both the ball's bottom vertices hit the paddle's top surface
-                    Ball.ChangeDirY(Ball.GetDirY()*-1)
-                else:
-                    # The ball was going down diagonally-right and hit the right side of the top surface
-                    if BallX >= PaddleX and BallX + Ball.GetWidth() > PaddleX + Paddle.GetWidth() and Ball.GetDirX() == 1:
-                        Ball.ChangeDirY(Ball.GetDirY() * -1)
-
-                    # The ball was going down diagonally left and hit the left side of the top surface
-                    elif BallX + Ball.GetWidth() <= PaddleX + Paddle.GetWidth() and BallX < PaddleX and Ball.GetDirX() == -1:
-                        Ball.ChangeDirY(Ball.GetDirY() * -1)
-
-                    # This means that the ball hit the left or right side of the paddle, and not the top surface, so make the ball bounce back from where it came from
+                    if BallX >= PaddleX and BallX + ball.GetWidth() <= PaddleX + Paddle.GetWidth(): # Both the ball's bottom vertices hit the paddle's top surface
+                        ball.ChangeDirY(ball.GetDirY()*-1)
                     else:
-                        Ball.ChangeDirY(Ball.GetDirY()*-1)
-                        Ball.ChangeDirX(Ball.GetDirX()*-1)
+                        # The ball was going down diagonally-right and hit the right side of the top surface
+                        if BallX >= PaddleX and BallX + ball.GetWidth() > PaddleX + Paddle.GetWidth() and ball.GetDirX() == 1:
+                            ball.ChangeDirY(ball.GetDirY() * -1)
 
-                # Move the ball until it no longer collides with the paddle
-                while Paddle.isCollision(Ball.GetWidth(), Ball.GetHeight(), Ball.GetPosition()):
-                    Ball.Move(Ball.GetPosition())
+                        # The ball was going down diagonally left and hit the left side of the top surface
+                        elif BallX + ball.GetWidth() <= PaddleX + Paddle.GetWidth() and BallX < PaddleX and ball.GetDirX() == -1:
+                            ball.ChangeDirY(ball.GetDirY() * -1)
+
+                        # This means that the ball hit the left or right side of the paddle, and not the top surface, so make the ball bounce back from where it came from
+                        else:
+                            ball.ChangeDirY(ball.GetDirY()*-1)
+                            ball.ChangeDirX(ball.GetDirX()*-1)
+
+                    # Move the ball until it no longer collides with the paddle
+                    while Paddle.isCollision(ball.GetWidth(), ball.GetHeight(), ball.GetPosition()):
+                        ball.Move(ball.GetPosition())
             
             for powerup in PowerUpList:
                 if Paddle.isCollision(powerup.GetWidth(), powerup.GetHeight(), powerup.GetPosition()): # Paddle hit a power up
@@ -682,12 +707,18 @@ def Main():
 
                         PowerUpList.remove(powerup) # Remove power up or power down from the game
 
-            if Ball.HitBottomEdge(Window.GetHeight()) is True: # Check if the ball has hit the bottom edge
+            for ball in list(BallsList):
+                if ball.HitBottomEdge(Window.GetHeight()) is True: # Check if the ball has hit the bottom edge
+                    BallsList.remove(ball)
+
+            if len(BallsList) == 0:
                 Lives -= 1
                 if Lives <= 0: # The game is over
                     GameOngoing = False
                 else: # Allow the player to reshoot the ball
+                    Ball = BallSprite(20, 20, 4.5)
                     Ball.SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth())
+                    BallsList = [Ball]
                     CanShootBall = True
 
             # --- Update text sprites here ---
@@ -715,7 +746,8 @@ def Main():
             Window.GetSurface().blit(brick.GetSurface(), brick.GetPosition())
 
         Window.GetSurface().blit(Paddle.GetSurface(), Paddle.GetPosition())
-        Window.GetSurface().blit(Ball.GetSurface(), Ball.GetPosition())
+        for ball in BallsList:
+            Window.GetSurface().blit(ball.GetSurface(), ball.GetPosition())
 
         Window.GetSurface().blit(TopBoundary.GetSurface(), TopBoundary.GetPosition())
 
