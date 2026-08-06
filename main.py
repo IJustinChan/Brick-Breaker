@@ -545,10 +545,10 @@ def Main():
     ScoreMessageText.SetColor((0, 0, 0))
     ScoreMessageText.UpdateText("Your final score is " + str(Score))
 
-    RestartText = TextSprite("Click pygame's exit button to quit. Or, wait 5 seconds the restart", "Comic sans", 15)
+    RestartText = TextSprite("Click pygame's exit button to quit. Or, wait 5 seconds to restart", "Comic sans", 15)
     RestartText.SetPosition(-40, -40) # Make this sprite go off screen
     RestartText.SetColor((0, 0, 0))
-    RestartText.UpdateText("Click pygame's exit button to quit. Or, wait 5 seconds the restart")
+    RestartText.UpdateText("Click pygame's exit button to quit. Or, wait 5 seconds to restart")
 
     # --- Other Sprites ---
     TopBoundary = UpperBlock(Window.GetWidth(), 50)
