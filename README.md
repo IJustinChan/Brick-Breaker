@@ -12,10 +12,10 @@ A 2D Brick Breaker game built in Python with PyGame. The game features real-time
 ## Screenshots
 
 ## Start of the Game
-<img src="images/game_start.png" height = 500>
+<img src="Images/game_start.png" height = 500>
 
 ## Middle of the Game
-<img src="images/game_middle.png" height = 500>
+<img src="Images/game_middle.png" height = 500>
 
 The player has a shorter paddle from collecting a power-down and numerous extra balls have been spawned.
 
