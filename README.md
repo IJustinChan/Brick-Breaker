@@ -17,7 +17,7 @@ A 2D Brick Breaker game built in Python with PyGame. The game features real-time
 ## Middle of the Game
 <img src="Images/game_middle.png" height = 500>
 
-The player has a shorter paddle from collecting a power-down and numerous extra balls have been spawned.
+The player has a shorter paddle from collecting a power-down and numerous extra balls have spawned from destroying brown bricks.
 
 ## Technologies Used
 - Python
@@ -33,8 +33,6 @@ pip install pygame
 ```
 
 To play the game, run the file `main.py` 
-
-# Game Instructions and Mechanics
 
 ## Rules
 Use left arrow key or "a" to move the paddle left, and use right arrow key or "d" to move the paddle right. The objective is to keep the ball in play and destroy all bricks in each level. If all balls fall below the bottom of the screen, the player loses one life.
