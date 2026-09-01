@@ -4,17 +4,17 @@ A 2D Brick Breaker game built in Python with PyGame. The game features real-time
 ## Features
 - Control the paddle with responsive movement to keep balls in play
 - Break bricks with varying durability that may require multiple hits
-- Progress through multiple levels featuring faster ball speeds and increasingly durable bricks.
-- Detect collisions between balls, paddles, bricks, and screen boundaries
+- Progress through increasingly difficult levels with faster ball speeds and more durable bricks
+- Handle collisions between balls, the paddle, bricks, and screen boundaries
 - Collect randomized power-ups and power-downs that increase or decrease paddle size
 - Trigger multi-ball gameplay by destroying special brown bricks that spawn an additional ball
 
 ## Screenshots
 
-## Start of the Game
+### Start of the Game
 <img src="Images/game_start.png" height = 500>
 
-## Middle of the Game
+### Mid-Game
 <img src="Images/game_middle.png" height = 500>
 
 The player has a shorter paddle from collecting a power-down and numerous extra balls have spawned from destroying brown bricks.
@@ -22,7 +22,7 @@ The player has a shorter paddle from collecting a power-down and numerous extra 
 ## Technologies Used
 - Python
 - Pygame
-- Object Oriented Programming
+- Object Oriented Programming (OOP)
 
 ## Requirements and Running the Program
 Ensure that Python is installed on your system.
@@ -37,11 +37,11 @@ To play the game, run the file `main.py`
 ## Rules
 Use left arrow key or "a" to move the paddle left, and use right arrow key or "d" to move the paddle right. The objective is to keep the ball in play and destroy all bricks in each level. If all balls fall below the bottom of the screen, the player loses one life.
 
-The player has **three lives**. To advance to the next level, all bricks in the current level must be destroyed. There is no fixed final level, so the game continues with increasing difficulty as long as the player has lives remaining.
+The player starts with **three lives**. To advance to the next level, all bricks in the current level must be destroyed. There is no fixed final level, so the game continues with increasing difficulty as long as the player has lives remaining.
 
 ## Game Mechanics
 
-### Bricks have Varying Health
+### Bricks Durability
 Bricks have different durability levels and may require multiple hits before being destroyed. The brick color indicates the number of hits required:
 - White bricks = 1 hit
 - Yellow bricks = 2 hits
@@ -60,6 +60,9 @@ Certain bricks trigger special effects when destroyed.
 ## Project Structure
 ```text
 Brick-Breaker/
+├── Images/
+│   ├── game_start.png
+│   └── game_middle.png
 ├── ball_sprite.py
 ├── brick.py
 ├── main.py
