@@ -31,7 +31,7 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCR
     :param COLORS: dict
     :param INSIDE_SCREEN: bool
     """
-    BricksArr = [] # Store all the bricks created in this list. It utilizes aggregation.
+    BricksArr = []
 
     # Specify the padding between the bricks when they are created
     PaddingX = 10
@@ -49,32 +49,32 @@ def CreateBricks(NUM_ROWS, NUM_COLUMNS, LEVEL, WIDTH, HEIGHT, COLORS, INSIDE_SCR
 
     for i in range(NUM_ROWS):
         for j in range(NUM_COLUMNS):
-            Health = random.randint(1, MaxHealth) # Generate random health of the brick
+            Health = random.randint(1, MaxHealth)
 
-            BrickType = "Regular" # Assume the brick does not give power ups
+            BrickType = "Regular"
             if Health == 1: # Only bricks with a health of one can give power ups or multiball bricks
-                MultiballChance = random.randint(1, 5) # 20% chance for a brown multiball brick
+                MultiballChance = random.randint(1, 5)
                 if MultiballChance == 1:
                     BrickType = "MultiBall"
-                elif CalculatePowerUpChance() is True: # Determine if the brick with one health can be a power up brick
+                elif CalculatePowerUpChance() is True:
                     BrickType = "PowerUp"
 
-            XPOS = (PaddingX + WIDTH)*j + 60 # Determine the x-position using its column number, x-padding, and width. Translate it 60 pixels to the right
+            XPOS = (PaddingX + WIDTH)*j + 60
 
             # This checks if we are creating the bricks inside the screen or outside the screen
             # When the user starts playing the game, the bricks will initially be created inside the screen.
             # After a level ends, bricks will be created outside the screen so they can move down.
             if INSIDE_SCREEN is True:
-                YPOS = (PaddingY + HEIGHT)*i + 80 # Translate 80 pixels down as well to ensure bricks are not created in the top boundary
+                YPOS = (PaddingY + HEIGHT)*i + 80
             else:
-                YPOS = (PaddingY + HEIGHT)*i - MaxY # Subtract by MaxY to make the bricks above the screen
+                YPOS = (PaddingY + HEIGHT)*i - MaxY
 
             # Aggregation is implemented here as the brick objects are being placed into the same list
             BricksArr.append(Brick(Health, WIDTH, HEIGHT, XPOS, YPOS, BrickType))
 
             if BrickType == "Regular": # Change the color of the brick depending on its health if it is a regular brick
                 BricksArr[-1].SetColor(COLORS[Health])
-            elif BrickType == "PowerUp": # Give power up bricks a special color
+            elif BrickType == "PowerUp": # Power up bricks are cyan
                 BricksArr[-1].SetColor((63, 181, 191))
             else: # Multi-ball bricks are brown
                 BricksArr[-1].SetColor((150, 75, 0))
@@ -99,7 +99,7 @@ def CalculatePowerUpChance():
     Decide if a brick with a health of one is a power up brick or not
     :return: bool
     """
-    Chance = random.randint(1, 5) # Choose a random number between 1 and 5, inclusive
+    Chance = random.randint(1, 5)
     if Chance <= 3: # 60% chance that brick is a power up brick
         return True
     else:
@@ -110,7 +110,7 @@ def DecidePowerUpType():
     Decide if a power up or power down will be created after a power up brick is destroyed
     :return: str
     """
-    LongerPaddleChance = random.randint(1, 4) # Both ends are inclusive
+    LongerPaddleChance = random.randint(1, 4)
     if LongerPaddleChance == 1: # 25% chance it is a power up that makes the paddle longer
         return "Longer Paddle"
     else:
@@ -134,16 +134,16 @@ def Main():
     PaddleWidths = {
         0: 100, # When no power up is applied, its original width is 100
         -1: 60, # Hit a power up that decreases its width for the first time
-        -2: 25, # Hit a power up that decreases its width for the second time
+        -2: 25,
         1 : 125, # Power up increases its width first time
-        2: 150 # Power up increases its width for the second time
+        2: 150
     }
 
     # --- Variables ---
     Score = 0
     Level = 1
     Lives = 3
-    GameOngoing = True # Variable to keep track if the player still has lives left
+    GameOngoing = True
 
     # --- Text Sprites ---
     TitleText = TextSprite("BRICK BREAKER!", "Comic sans", 25)
@@ -164,10 +164,10 @@ def Main():
     GameOverText = TextSprite("Game Over!", "Comic sans", 40)
     GameOverText.SetPosition(-100, -100) # Set this sprite off screen
     GameOverText.SetColor((0, 0, 0))
-    GameOverText.UpdateText("Game Over!") # This function applies the text color to the text
+    GameOverText.UpdateText("Game Over!")
 
     ScoreMessageText = TextSprite("Your final score is " + str(Score), "Comic sans", 25)
-    ScoreMessageText.SetPosition(-150, -150) # Set this sprite off screen
+    ScoreMessageText.SetPosition(-150, -150)
     ScoreMessageText.SetColor((0, 0, 0))
     ScoreMessageText.UpdateText("Your final score is " + str(Score))
 
@@ -181,7 +181,6 @@ def Main():
     TopBoundary.SetColor((0, 0, 0))
 
     Paddle = PaddleSprite(100, 10)
-    # Place the paddle at the center of the screen
     Paddle.SetPosition(Window.GetWidth()/2 - Paddle.GetWidth()/2, Window.GetHeight() - Paddle.GetHeight() - 30)
 
     Ball = BallSprite(20, 20, 4.5)
@@ -200,11 +199,10 @@ def Main():
     # Aggregation is utilized here where we create a list that stores individual objects
     BricksList = CreateBricks(NumRows, NumColumns, Level, BrickWidth, BrickHeight, BrickColors, True)
 
-    # List to store all the power up objects, which also uses aggregation
     PowerUpList = []
 
     StartGame = False # Game only starts once the player presses the space bar
-    CanShootBall = True # Set it to True so player can shoot the ball at the beginning of the game
+    CanShootBall = True
 
     while True:
         # --- INPUTS ---
@@ -220,15 +218,15 @@ def Main():
             if PRESSED_KEYS[pygame.K_SPACE]:
                 StartGame = True
         else: # Game has started
-            Paddle.LeftRightMove(PRESSED_KEYS) # Allow the paddle to move left and right
+            Paddle.LeftRightMove(PRESSED_KEYS)
             Paddle.CheckBoundaries(Window.GetWidth(), Window.GetHeight())
 
-            if CanShootBall is True: # Check if the ball needs to be launched at the paddle
+            if CanShootBall is True:
                 BallsList[0].SetBallAtPaddle(Paddle.GetPosition(), Paddle.GetWidth())
-                if PRESSED_KEYS[pygame.K_UP] == 1 or PRESSED_KEYS[pygame.K_w] == 1: # Ball will be launched when up arrow key or "W" is pressed
+                if PRESSED_KEYS[pygame.K_UP] == 1 or PRESSED_KEYS[pygame.K_w] == 1:
                     Paddle.LaunchBall(PRESSED_KEYS, BallsList[0])
                     CanShootBall = False # Set it to False so player can no longer shoot the ball after it is launched
-            else: # Move the balls after they have been launched
+            else:
                 for ball in BallsList:
                     ball.Move(ball.GetPosition())
 
@@ -236,26 +234,26 @@ def Main():
                 ball.CheckBoundaries(Window.GetWidth(), Window.GetHeight(), 0, TopBoundary.GetHeight())
 
             if MoveBricksDown is True: # Check if the brick needs to be move down if it has not reached final position
-                for brick in BricksList: # Move each brick down
+                for brick in BricksList:
                     brick.MoveDown(brick.GetPosition(), 4)
                 Counter -= 4 # Decrease Counter so we know how much the bricks still needs to move down by
-                if Counter <= 0: # Brick has reached their final positions
+                if Counter <= 0:
                     MoveBricksDown = False
 
             for ball in list(BallsList):
                 for brick in list(BricksList):
                     if ball.isCollision(brick.GetWidth(), brick.GetHeight(), brick.GetPosition()) is True:
-                        brick.LoseHealth() # Make the brick lose health after the ball hits it
+                        brick.LoseHealth()
                         Score += 1
-                        if brick.GetHealth() <= 0: # Brick has been destroyed
-                            if brick.GetType() == "PowerUp": # Check if the brick gives power ups
+                        if brick.GetHealth() <= 0:
+                            if brick.GetType() == "PowerUp":
                                 # Decide what type of power up to give
                                 if DecidePowerUpType() == "Longer Paddle":
                                     PowerUp = PaddleLengthPowerUp("Longer Paddle", 20, 20, 4) # The power up increases paddle's length
-                                    PowerUp.UpdateColor("Longer Paddle") # Change color to green
+                                    PowerUp.UpdateColor("Longer Paddle")
                                 else:
                                     PowerUp = PaddleLengthPowerUp("Shorter Paddle", 110, 20, 4)
-                                    PowerUp.UpdateColor("Shorter Paddle") # Change color to purple
+                                    PowerUp.UpdateColor("Shorter Paddle")
                                 PowerUp.SetPowerUpAtBrick(brick.GetPosition(), brick.GetWidth(), brick.GetHeight()) # Create power up at where the brick was destroyed
                                 PowerUpList.append(PowerUp)
                             elif brick.GetType() == "MultiBall":
@@ -267,9 +265,9 @@ def Main():
                             brick.SetColor(BrickColors[brick.GetHealth()]) # Change brick's color if it has still has health left
             
             if len(PowerUpList) > 0:
-                for powerup in PowerUpList: # Move each power ups down
+                for powerup in PowerUpList:
                     powerup.MoveDown(powerup.GetPosition(), powerup.GetSpeed())
-                    if powerup.CheckBoundaries(Window.GetHeight()) is True: # Remove the power up from the game after it hits the bottom of the screen
+                    if powerup.CheckBoundaries(Window.GetHeight()) is True:
                         PowerUpList.remove(powerup)
             
             if len(BricksList) == 0: # All the bricks in the level has been destroyed
@@ -281,7 +279,7 @@ def Main():
                 Counter = (NumRows - 1)*(10 + BrickHeight) + 80 # Calculate how much the bricks need to move down by
 
             for ball in list(BallsList):
-                if Paddle.isCollision(ball.GetWidth(), ball.GetHeight(), ball.GetPosition()): # Check if paddle and ball collided
+                if Paddle.isCollision(ball.GetWidth(), ball.GetHeight(), ball.GetPosition()):
                     BallPosition = ball.GetPosition()
                     BallX = BallPosition[0]
                     
@@ -309,7 +307,7 @@ def Main():
                         ball.Move(ball.GetPosition())
             
             for powerup in PowerUpList:
-                if Paddle.isCollision(powerup.GetWidth(), powerup.GetHeight(), powerup.GetPosition()): # Paddle hit a power up
+                if Paddle.isCollision(powerup.GetWidth(), powerup.GetHeight(), powerup.GetPosition()):
                     PaddleWidthState = Paddle.GetWidthState()
 
                     if powerup.GetPowerUpType() == "Longer Paddle":
@@ -317,21 +315,21 @@ def Main():
 
                             PaddleWidthState += 1
                             Paddle.UpdateWidthState(PaddleWidthState)
-                            NewPaddleWidth = PaddleWidths[PaddleWidthState] # Get the new longer width the paddle should change into
-                            Paddle.ChangePaddleWidth(NewPaddleWidth) # Increase paddle's width
+                            NewPaddleWidth = PaddleWidths[PaddleWidthState]
+                            Paddle.ChangePaddleWidth(NewPaddleWidth)
                         else: # Paddle reached maximum length
                             Score += 5
                         PowerUpList.remove(powerup)
-                    else: # Make the paddle shorter
+                    else:
                         if PaddleWidthState - 1 >= -2: # Paddle can still be shortened
                             PaddleWidthState -= 1
                             Paddle.UpdateWidthState(PaddleWidthState)
-                            NewPaddleWidth = PaddleWidths[PaddleWidthState] # Get the new shorter width the paddle should change to
-                            Paddle.ChangePaddleWidth(NewPaddleWidth) # Make the paddle shorter
+                            NewPaddleWidth = PaddleWidths[PaddleWidthState]
+                            Paddle.ChangePaddleWidth(NewPaddleWidth)
                         else: # Paddle reached minimum length
                             Score -= 20
 
-                        PowerUpList.remove(powerup) # Remove power up or power down from the game
+                        PowerUpList.remove(powerup)
 
             for ball in list(BallsList):
                 if ball.HitBottomEdge(Window.GetHeight()) is True: # Check if the ball has hit the bottom edge
@@ -356,7 +354,7 @@ def Main():
             LivesText.UpdateText("Lives: " + str(Lives))
             LivesText.SetPosition(Window.GetWidth() - LivesText.GetWidth() - 10, LevelText.GetHeight())
 
-            ScoreMessageText.UpdateText("Your final score is " + str(Score)) # Update this text so it is ready to be displayed when the game ends
+            ScoreMessageText.UpdateText("Your final score is " + str(Score))
 
         # --- OUTPUTS ---
         Window.ClearScreen()
@@ -365,10 +363,10 @@ def Main():
             Window.GetSurface().blit(StartText.GetSurface(), StartText.GetPosition()) # Display message for user to press space bar
 
         if len(PowerUpList) > 0: # Check if there are any power ups created
-            for powerup in PowerUpList: # Display each power up
+            for powerup in PowerUpList:
                 Window.GetSurface().blit(powerup.GetSurface(), powerup.GetPosition())
 
-        for brick in BricksList: # Display all the bricks
+        for brick in BricksList:
             Window.GetSurface().blit(brick.GetSurface(), brick.GetPosition())
 
         Window.GetSurface().blit(Paddle.GetSurface(), Paddle.GetPosition())
@@ -395,7 +393,7 @@ def Main():
             Window.GetSurface().blit(ScoreMessageText.GetSurface(), ScoreMessageText.GetPosition())
             Window.GetSurface().blit(RestartText.GetSurface(), RestartText.GetPosition())
 
-            Window.UpdateFrame() # Show the messages above
+            Window.UpdateFrame()
 
             # This allows the user to close the pygame window during the five second wait time
             StartTime = time.time()
@@ -404,12 +402,12 @@ def Main():
                     if event.type == pygame.QUIT:
                         exit()
 
-            break # This ends the main loop
+            break
 
         Window.UpdateFrame()
     
     Main() # Use recursion to call the Main() function which restarts the whole game
 
 if __name__ == "__main__":
-    Main() # Run the function where the main program code is held in
+    Main()
 
